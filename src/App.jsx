@@ -5,7 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import LandingPage from "./pages/LandingPage";
 
-const API = "http://localhost:5001";
+const API = "https://job-tracker-backend-s1fc.onrender.com";
 
 const STATUS_STYLES = {
   Applied: { badge: "bg-brand-100 text-brand-700", btn: "bg-brand-50 text-brand-600 hover:bg-brand-100", dot: "bg-brand-500" },
