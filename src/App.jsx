@@ -203,7 +203,7 @@ function Sidebar({ activeTab, setActiveTab, handleLogout, initials, userName }) 
             {initials}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-white truncate">{userName}</p>
+            <p className="text-sm font-medium text-brand-400 truncate">{userName}</p>
             <p className="text-xs text-body">Free Plan</p>
           </div>
         </div>
