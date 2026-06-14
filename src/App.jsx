@@ -945,7 +945,7 @@ function Dashboard() {
                           )}
 
                           {/* Actions */}
-                          <div className="flex gap-2 mt-3 flex-wrap opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex gap-2 mt-3 flex-wrap lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => setEditJob({ ...job })}
                               className="px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-50 text-body hover:bg-brand-100 transition-colors"
@@ -1026,7 +1026,7 @@ function Dashboard() {
                               ))}
                             </div>
                           )}
-                          <div className="flex gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex gap-2 mt-3 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => archiveJob(job._id, false)}
                               className="px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-50 text-brand-600 hover:bg-brand-100 transition-colors"
