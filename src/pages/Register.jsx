@@ -19,7 +19,7 @@ function Register({ setPage }) {
 
     try {
       setLoading(true);
-      await axios.post("https://job-tracker-backend-s1fc.onrender.com/api/auth/register", {
+      await axios.post("http://localhost:5001/api/auth/register", {
         name,
         email,
         password,

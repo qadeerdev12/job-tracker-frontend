@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
 
+const inputClass = "w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-brand-400 focus:border-brand-400 outline-none transition-shadow";
+
 function Login({ setPage }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,7 +13,7 @@ function Login({ setPage }) {
     setErrorMsg("");
 
     try {
-      const res = await axios.post("https://job-tracker-backend-s1fc.onrender.com/api/auth/login", {
+      const res = await axios.post("http://localhost:5001/api/auth/login", {
         email,
         password,
       });
@@ -57,7 +59,7 @@ function Login({ setPage }) {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-gray-200 p-3 rounded-xl mb-4 focus:ring-2 focus:ring-brand-400 focus:border-brand-400 outline-none transition-shadow"
+          className={`${inputClass} mb-4`}
         />
 
         <input
@@ -65,7 +67,7 @@ function Login({ setPage }) {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-gray-200 p-3 rounded-xl mb-6 focus:ring-2 focus:ring-brand-400 focus:border-brand-400 outline-none transition-shadow"
+          className={`${inputClass} mb-6`}
         />
 
         <button
