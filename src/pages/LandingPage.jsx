@@ -4,7 +4,12 @@ function LandingPage({ setPage }) {
       {/* Navbar */}
       <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-brand-100">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <span className="text-2xl font-extrabold text-brand-600">ApplyFlow</span>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><rect x="3" y="7" width="18" height="13" rx="2" strokeLinecap="round" strokeLinejoin="round" /><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5.5A1.5 1.5 0 019.5 4h5A1.5 1.5 0 0116 5.5V7" /><polyline points="9,13.5 11,15.5 15,11.5" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </div>
+            <span className="text-2xl font-extrabold text-brand-700">ApplyFlow</span>
+          </div>
           <div className="flex gap-3">
             <button
               onClick={() => setPage("login")}
@@ -128,8 +133,13 @@ function LandingPage({ setPage }) {
       {/* Footer */}
       <footer className="bg-surface-dark py-8 px-6">
         <div className="max-w-6xl mx-auto text-center">
-          <span className="text-brand-300 font-bold">ApplyFlow</span>
-          <p className="text-gray-500 text-sm mt-2">&copy; 2025 ApplyFlow. All rights reserved.</p>
+          <div className="flex items-center gap-2 justify-center">
+            <div className="w-6 h-6 bg-gradient-to-br from-brand-400 to-brand-600 rounded-md flex items-center justify-center">
+              <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><rect x="3" y="7" width="18" height="13" rx="2" strokeLinecap="round" strokeLinejoin="round" /><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5.5A1.5 1.5 0 019.5 4h5A1.5 1.5 0 0116 5.5V7" /><polyline points="9,13.5 11,15.5 15,11.5" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </div>
+            <span className="text-brand-300 font-bold">ApplyFlow</span>
+          </div>
+          <p className="text-gray-500 text-sm mt-2">&copy; 2026 ApplyFlow. All rights reserved.</p>
         </div>
       </footer>
     </div>

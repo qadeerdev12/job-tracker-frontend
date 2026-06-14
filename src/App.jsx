@@ -14,7 +14,7 @@ const STATUS_STYLES = {
   Rejected: { badge: "bg-gray-100 text-gray-700", btn: "bg-gray-50 text-gray-600 hover:bg-gray-100", dot: "bg-gray-400" },
 };
 
-const CHART_COLORS = ["#6366f1", "#f59e0b", "#10b981", "#6b7280"];
+const CHART_COLORS = ["#0d9488", "#f59e0b", "#10b981", "#6b7280"];
 
 const inputClass = "w-full border border-gray-200 bg-gray-50/50 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 focus:bg-white outline-none transition-all";
 
@@ -173,9 +173,9 @@ function Sidebar({ activeTab, setActiveTab, handleLogout, initials, userName }) 
       <div className="p-6 pb-4">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.63 8.41m5.96 5.96a14.926 14.926 0 01-5.84 2.58m0 0a6 6 0 01-7.38-5.84h4.8m2.58-5.84a14.927 14.927 0 00-2.58 5.84m2.58-5.84L18 2.76M2 16.76l3-3" /></svg>
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><rect x="3" y="7" width="18" height="13" rx="2" strokeLinecap="round" strokeLinejoin="round" /><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5.5A1.5 1.5 0 019.5 4h5A1.5 1.5 0 0116 5.5V7" /><polyline points="9,13.5 11,15.5 15,11.5" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></svg>
           </div>
-          <span className="text-xl font-bold text-white tracking-tight">ApplyFlow</span>
+          <span className="text-xl font-bold text-brand-300 tracking-tight">ApplyFlow</span>
         </div>
       </div>
 
@@ -551,7 +551,7 @@ function Dashboard() {
                       <XAxis dataKey="week" tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
                       <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
                       <Tooltip contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "13px" }} />
-                      <Bar dataKey="count" fill="#6366f1" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="count" fill="#0d9488" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
