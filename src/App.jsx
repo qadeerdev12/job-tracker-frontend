@@ -170,7 +170,7 @@ function Sidebar({ activeTab, setActiveTab, handleLogout, initials, userName }) 
   ];
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-sidebar flex flex-col z-40">
+    <aside className="h-full w-full bg-sidebar flex flex-col">
       <div className="p-6 pb-4">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
@@ -471,7 +471,7 @@ function Dashboard() {
       )}
 
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0 transition-transform duration-200 z-40`}>
+      <div className={`fixed inset-y-0 left-0 w-64 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0 transition-transform duration-200 z-40`}>
         <Sidebar
           activeTab={activeTab}
           setActiveTab={(tab) => { setActiveTab(tab); setSidebarOpen(false); }}
