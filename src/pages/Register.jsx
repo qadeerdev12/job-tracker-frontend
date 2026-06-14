@@ -1,5 +1,3 @@
-
-
 import { useState } from "react";
 import axios from "axios";
 
@@ -27,7 +25,6 @@ function Register({ setPage }) {
         password,
       });
 
-      // After successful registration, go back to login page
       setPage("login");
     } catch (error) {
       const msg =
@@ -36,28 +33,35 @@ function Register({ setPage }) {
         error.message ||
         "Registration failed";
       setErrorMsg(msg);
-      console.log(msg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-300 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 to-brand-100 flex items-center justify-center px-4">
       <form
         onSubmit={handleRegister}
-        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
+        className="bg-white p-8 rounded-2xl shadow-xl border border-brand-100 w-full max-w-md"
       >
-        <h2 className="text-2xl font-bold mb-2 text-center">
-          Create an Account
+        <button
+          type="button"
+          onClick={() => setPage("landing")}
+          className="block mx-auto text-3xl font-extrabold text-brand-600 mb-2 hover:text-brand-700 transition-colors"
+        >
+          ApplyFlow
+        </button>
+
+        <h2 className="text-xl font-bold mb-1 text-center text-gray-800">
+          Join ApplyFlow
         </h2>
 
-        <p className="text-center text-gray-500 mb-6">
-          Start tracking your job applications
+        <p className="text-center text-gray-400 mb-6 text-sm">
+          Start organizing your job search today
         </p>
 
         {errorMsg && (
-          <div className="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm">
+          <div className="bg-red-100 text-red-700 p-2 rounded-lg mb-4 text-sm">
             {errorMsg}
           </div>
         )}
@@ -67,7 +71,7 @@ function Register({ setPage }) {
           placeholder="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full border border-gray-400 p-2 rounded mb-4"
+          className="w-full border border-gray-200 p-3 rounded-xl mb-4 focus:ring-2 focus:ring-brand-400 focus:border-brand-400 outline-none transition-shadow"
         />
 
         <input
@@ -75,7 +79,7 @@ function Register({ setPage }) {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-gray-400 p-2 rounded mb-4"
+          className="w-full border border-gray-200 p-3 rounded-xl mb-4 focus:ring-2 focus:ring-brand-400 focus:border-brand-400 outline-none transition-shadow"
         />
 
         <input
@@ -83,27 +87,35 @@ function Register({ setPage }) {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-gray-400 p-2 rounded mb-6"
+          className="w-full border border-gray-200 p-3 rounded-xl mb-6 focus:ring-2 focus:ring-brand-400 focus:border-brand-400 outline-none transition-shadow"
         />
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 disabled:opacity-60"
+          className="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white py-3 rounded-xl font-semibold shadow-md transition-all disabled:opacity-60"
         >
-          {loading ? "Creating account..." : "Register"}
+          {loading ? "Creating account..." : "Create Account"}
         </button>
 
-        <p className="text-center text-gray-500 mt-4">
+        <p className="text-center text-gray-400 mt-5 text-sm">
           Already have an account?
         </p>
 
         <button
           type="button"
           onClick={() => setPage("login")}
-          className="w-full mt-2 bg-gray-500 text-white py-2 rounded hover:bg-gray-600"
+          className="w-full mt-2 bg-accent-500 hover:bg-accent-600 text-white py-3 rounded-xl font-semibold transition-colors"
         >
-          Back to Login
+          Sign In
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setPage("landing")}
+          className="w-full mt-3 text-gray-400 hover:text-brand-500 text-sm transition-colors"
+        >
+          Back to home
         </button>
       </form>
     </div>
