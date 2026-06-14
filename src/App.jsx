@@ -11,12 +11,13 @@ const STATUS_STYLES = {
   Applied: { badge: "bg-brand-100 text-brand-700", btn: "bg-brand-50 text-brand-600 hover:bg-brand-100", dot: "bg-brand-500" },
   Interview: { badge: "bg-amber-100 text-amber-700", btn: "bg-amber-50 text-amber-600 hover:bg-amber-100", dot: "bg-amber-500" },
   Offer: { badge: "bg-emerald-100 text-emerald-700", btn: "bg-emerald-50 text-emerald-600 hover:bg-emerald-100", dot: "bg-emerald-500" },
-  Rejected: { badge: "bg-gray-100 text-gray-700", btn: "bg-gray-50 text-gray-600 hover:bg-gray-100", dot: "bg-gray-400" },
+  Rejected: { badge: "bg-gray-100 text-heading", btn: "bg-gray-50 text-body hover:bg-brand-50", dot: "bg-gray-400" },
 };
 
-const CHART_COLORS = ["#0d9488", "#f59e0b", "#10b981", "#6b7280"];
+const CHART_COLORS_LIGHT = ["#4f46e5", "#f59e0b", "#10b981", "#6b7280"];
+const CHART_COLORS_DARK = ["#3b82f6", "#f59e0b", "#10b981", "#64748b"];
 
-const inputClass = "w-full border border-gray-200 bg-gray-50/50 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 focus:bg-white outline-none transition-all";
+const inputClass = "w-full border border-input-border bg-input-bg px-4 py-2.5 rounded-lg text-sm text-heading focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 focus:bg-card outline-none transition-all";
 
 const PRESET_TAGS = ["Remote", "On-site", "Hybrid", "Frontend", "Backend", "Full Stack", "Graduate", "Contract", "Full-time", "Part-time", "Visa Sponsorship", "Internship"];
 
@@ -92,14 +93,14 @@ function TagInput({ tags, setTags, allTags }) {
         />
       </div>
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+        <div className="absolute z-10 mt-1 w-full bg-card border border-line-strong rounded-lg shadow-lg max-h-40 overflow-y-auto">
           {suggestions.map((tag) => (
             <button
               key={tag}
               type="button"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => addTag(tag)}
-              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
+              className="w-full text-left px-3 py-2 text-sm text-body hover:bg-brand-50 hover:text-brand-700 transition-colors"
             >
               <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-medium mr-2 ${getTagColor(tag)}`}>{tag}</span>
             </button>
@@ -169,13 +170,13 @@ function Sidebar({ activeTab, setActiveTab, handleLogout, initials, userName }) 
   ];
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-surface-dark flex flex-col z-40">
+    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-sidebar flex flex-col z-40">
       <div className="p-6 pb-4">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><rect x="3" y="7" width="18" height="13" rx="2" strokeLinecap="round" strokeLinejoin="round" /><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5.5A1.5 1.5 0 019.5 4h5A1.5 1.5 0 0116 5.5V7" /><polyline points="9,13.5 11,15.5 15,11.5" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></svg>
           </div>
-          <span className="text-xl font-bold text-brand-300 tracking-tight">ApplyFlow</span>
+          <span className="text-xl font-bold text-brand-400 tracking-tight">ApplyFlow</span>
         </div>
       </div>
 
@@ -187,7 +188,7 @@ function Sidebar({ activeTab, setActiveTab, handleLogout, initials, userName }) 
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium mb-1 transition-all ${
               activeTab === item.id
                 ? "bg-brand-600 text-white shadow-lg shadow-brand-600/25"
-                : "text-gray-400 hover:text-white hover:bg-white/5"
+                : "text-muted hover:text-white hover:bg-white/5"
             }`}
           >
             {item.icon}
@@ -203,18 +204,41 @@ function Sidebar({ activeTab, setActiveTab, handleLogout, initials, userName }) 
           </div>
           <div className="min-w-0">
             <p className="text-sm font-medium text-white truncate">{userName}</p>
-            <p className="text-xs text-gray-500">Free Plan</p>
+            <p className="text-xs text-body">Free Plan</p>
           </div>
         </div>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-2 px-4 py-2.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl text-sm transition-all"
+          className="w-full flex items-center gap-2 px-4 py-2.5 text-muted hover:text-red-400 hover:bg-red-500/10 rounded-xl text-sm transition-all"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
           Sign Out
         </button>
       </div>
     </aside>
+  );
+}
+
+function ThemeToggle() {
+  const [dark, setDark] = useState(() => localStorage.getItem("theme") === "dark");
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+    localStorage.setItem("theme", dark ? "dark" : "light");
+  }, [dark]);
+
+  return (
+    <button
+      onClick={() => setDark(!dark)}
+      className="p-2 rounded-lg text-muted hover:text-heading hover:bg-card transition-colors"
+      title={dark ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      {dark ? (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
+      ) : (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
+      )}
+    </button>
   );
 }
 
@@ -412,6 +436,9 @@ function Dashboard() {
 
   const weeklyData = useMemo(() => getWeeklyData(jobs), [jobs]);
 
+  const isDark = document.documentElement.classList.contains("dark");
+  const chartColors = isDark ? CHART_COLORS_DARK : CHART_COLORS_LIGHT;
+
   const chartData = [
     { name: "Applied", value: stats.Applied },
     { name: "Interview", value: stats.Interview },
@@ -433,11 +460,11 @@ function Dashboard() {
     brand: { bg: "bg-brand-50", icon: "bg-brand-100 text-brand-600", text: "text-brand-600" },
     amber: { bg: "bg-amber-50", icon: "bg-amber-100 text-amber-600", text: "text-amber-600" },
     emerald: { bg: "bg-emerald-50", icon: "bg-emerald-100 text-emerald-600", text: "text-emerald-600" },
-    gray: { bg: "bg-gray-50", icon: "bg-gray-100 text-gray-600", text: "text-gray-600" },
+    gray: { bg: "bg-gray-50", icon: "bg-gray-100 text-body", text: "text-body" },
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/80">
+    <div className="min-h-screen bg-page">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
@@ -457,24 +484,24 @@ function Dashboard() {
       {/* Main Content */}
       <div className="lg:ml-64">
         {/* Top Bar */}
-        <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200/60">
+        <header className="sticky top-0 z-20 bg-topbar backdrop-blur-md border-b border-line">
           <div className="flex items-center justify-between px-6 lg:px-8 h-16">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                className="lg:hidden p-2 text-body hover:text-heading hover:bg-brand-50 rounded-lg"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
               </button>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">
+                <h1 className="text-lg font-semibold text-heading">
                   {activeTab === "dashboard" && "Dashboard"}
                   {activeTab === "applications" && "Applications"}
                   {activeTab === "archived" && "Archived"}
                   {activeTab === "activity" && "Activity Log"}
                   {activeTab === "add" && "New Application"}
                 </h1>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-muted">
                   {activeTab === "dashboard" && `Welcome back, ${firstName}`}
                   {activeTab === "applications" && `${filteredJobs.length} of ${jobs.length} shown`}
                   {activeTab === "archived" && `${archivedJobs.length} archived application${archivedJobs.length !== 1 ? "s" : ""}`}
@@ -484,6 +511,7 @@ function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <ThemeToggle />
               <button
                 onClick={() => setActiveTab("add")}
                 className="hidden sm:flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg shadow-sm shadow-brand-600/20 transition-colors"
@@ -505,9 +533,9 @@ function Dashboard() {
                 {statCards.map((card) => {
                   const c = colorMap[card.color];
                   return (
-                    <div key={card.label} className="bg-white rounded-xl border border-gray-200/60 p-5 hover:shadow-md transition-shadow">
+                    <div key={card.label} className="bg-card rounded-xl border border-line p-5 hover:shadow-md transition-shadow">
                       <div className="flex items-center justify-between mb-3">
-                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">{card.label}</span>
+                        <span className="text-xs font-medium text-body uppercase tracking-wider">{card.label}</span>
                         <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${c.icon}`}>
                           {card.icon}
                         </div>
@@ -521,37 +549,37 @@ function Dashboard() {
               {/* Charts Row */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 {/* Pie Chart */}
-                <div className="bg-white rounded-xl border border-gray-200/60 p-6">
+                <div className="bg-card rounded-xl border border-line p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-gray-800">Status Breakdown</h3>
-                    <span className="text-xs text-gray-400">{totalApps} total</span>
+                    <h3 className="text-sm font-semibold text-heading">Status Breakdown</h3>
+                    <span className="text-xs text-muted">{totalApps} total</span>
                   </div>
                   <div className="flex justify-center">
                     <PieChart width={280} height={240}>
                       <Pie data={chartData} dataKey="value" cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3}>
                         {chartData.map((entry, index) => (
-                          <Cell key={index} fill={CHART_COLORS[index]} />
+                          <Cell key={index} fill={chartColors[index]} />
                         ))}
                       </Pie>
-                      <Tooltip contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "13px" }} />
+                      <Tooltip contentStyle={{ borderRadius: "8px", border: "1px solid var(--color-line-strong)", fontSize: "13px", backgroundColor: "var(--color-card)", color: "var(--color-heading)" }} />
                       <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "13px" }} />
                     </PieChart>
                   </div>
                 </div>
 
                 {/* Weekly Bar Chart */}
-                <div className="bg-white rounded-xl border border-gray-200/60 p-6">
+                <div className="bg-card rounded-xl border border-line p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-gray-800">Weekly Activity</h3>
-                    <span className="text-xs text-gray-400">Last 6 weeks</span>
+                    <h3 className="text-sm font-semibold text-heading">Weekly Activity</h3>
+                    <span className="text-xs text-muted">Last 6 weeks</span>
                   </div>
                   <ResponsiveContainer width="100%" height={240}>
                     <BarChart data={weeklyData} barSize={32}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                      <XAxis dataKey="week" tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                      <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                      <Tooltip contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "13px" }} />
-                      <Bar dataKey="count" fill="#0d9488" radius={[6, 6, 0, 0]} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line-strong)" vertical={false} />
+                      <XAxis dataKey="week" tick={{ fontSize: 12, fill: "var(--color-muted)" }} axisLine={false} tickLine={false} />
+                      <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "var(--color-muted)" }} axisLine={false} tickLine={false} />
+                      <Tooltip contentStyle={{ borderRadius: "8px", border: "1px solid var(--color-line-strong)", fontSize: "13px", backgroundColor: "var(--color-card)", color: "var(--color-heading)" }} />
+                      <Bar dataKey="count" fill={isDark ? "#3b82f6" : "#4f46e5"} radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -559,15 +587,15 @@ function Dashboard() {
 
               {/* Follow-Up Reminders */}
               {reminders.length > 0 && (
-                <div className="bg-white rounded-xl border border-gray-200/60 p-6 mb-8">
+                <div className="bg-card rounded-xl border border-line p-6 mb-8">
                   <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-heading flex items-center gap-2">
                       <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
                       Follow-Up Reminders
                     </h3>
-                    <span className="text-xs text-gray-400">{reminders.length} pending</span>
+                    <span className="text-xs text-muted">{reminders.length} pending</span>
                   </div>
-                  <div className="divide-y divide-gray-100">
+                  <div className="divide-y divide-line">
                     {reminders.slice(0, 5).map((job) => {
                       const today = new Date(); today.setHours(0,0,0,0);
                       const fDate = new Date(job.followUpDate); fDate.setHours(0,0,0,0);
@@ -582,15 +610,15 @@ function Dashboard() {
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-gray-800 truncate">{job.company}</p>
-                            <p className="text-xs text-gray-400 truncate">{job.role}</p>
+                            <p className="text-sm font-medium text-heading truncate">{job.company}</p>
+                            <p className="text-xs text-muted truncate">{job.role}</p>
                           </div>
                           <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
                             isOverdue ? "bg-red-100 text-red-700" : isToday ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"
                           }`}>
                             {isOverdue ? `Overdue ${Math.abs(diffDays)}d` : isToday ? "Due today" : `In ${diffDays}d`}
                           </span>
-                          <span className="text-xs text-gray-400 shrink-0">
+                          <span className="text-xs text-muted shrink-0">
                             {new Date(job.followUpDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                           </span>
                         </div>
@@ -601,26 +629,26 @@ function Dashboard() {
               )}
 
               {/* Recent Activity */}
-              <div className="bg-white rounded-xl border border-gray-200/60 p-6">
+              <div className="bg-card rounded-xl border border-line p-6">
                 <div className="flex items-center justify-between mb-5">
-                  <h3 className="text-sm font-semibold text-gray-800">Recent Activity</h3>
+                  <h3 className="text-sm font-semibold text-heading">Recent Activity</h3>
                   <button onClick={() => setActiveTab("applications")} className="text-xs text-brand-600 hover:text-brand-700 font-medium">View all</button>
                 </div>
                 {recentActivity.length === 0 ? (
-                  <p className="text-gray-400 text-sm text-center py-8">No applications yet — add your first one!</p>
+                  <p className="text-muted text-sm text-center py-8">No applications yet — add your first one!</p>
                 ) : (
-                  <div className="divide-y divide-gray-100">
+                  <div className="divide-y divide-line">
                     {recentActivity.map((job) => (
                       <div key={job._id} className="flex items-center gap-4 py-3.5 first:pt-0 last:pb-0">
                         <div className={`w-2 h-2 rounded-full shrink-0 ${STATUS_STYLES[job.status]?.dot || "bg-gray-400"}`} />
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-gray-800 truncate">{job.company}</p>
-                          <p className="text-xs text-gray-400 truncate">{job.role}</p>
+                          <p className="text-sm font-medium text-heading truncate">{job.company}</p>
+                          <p className="text-xs text-muted truncate">{job.role}</p>
                         </div>
-                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-gray-600"}`}>
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-body"}`}>
                           {job.status}
                         </span>
-                        <span className="text-xs text-gray-400 shrink-0 w-20 text-right">
+                        <span className="text-xs text-muted shrink-0 w-20 text-right">
                           {timeAgo(job.updatedAt || job.createdAt)}
                         </span>
                       </div>
@@ -636,14 +664,14 @@ function Dashboard() {
           {activeTab === "activity" && (
             <>
               {activities.length === 0 ? (
-                <div className="bg-white rounded-xl border border-gray-200/60 p-12 text-center">
-                  <svg className="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <p className="text-gray-500 font-medium">No activity yet</p>
-                  <p className="text-sm text-gray-400 mt-1">Actions like adding, updating, and archiving jobs will appear here.</p>
+                <div className="bg-card rounded-xl border border-line p-12 text-center">
+                  <svg className="w-12 h-12 text-faint mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <p className="text-body font-medium">No activity yet</p>
+                  <p className="text-sm text-muted mt-1">Actions like adding, updating, and archiving jobs will appear here.</p>
                 </div>
               ) : (
-                <div className="bg-white rounded-xl border border-gray-200/60 p-6">
-                  <div className="divide-y divide-gray-100">
+                <div className="bg-card rounded-xl border border-line p-6">
+                  <div className="divide-y divide-line">
                     {activities.map((act) => {
                       const icons = {
                         created: { bg: "bg-emerald-100", color: "text-emerald-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg> },
@@ -651,7 +679,7 @@ function Dashboard() {
                         archived: { bg: "bg-orange-100", color: "text-orange-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg> },
                         restored: { bg: "bg-brand-100", color: "text-brand-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg> },
                         deleted: { bg: "bg-red-100", color: "text-red-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg> },
-                        edited: { bg: "bg-gray-100", color: "text-gray-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg> },
+                        edited: { bg: "bg-gray-100", color: "text-body", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg> },
                       };
                       const labels = {
                         created: "Added",
@@ -668,14 +696,14 @@ function Dashboard() {
                             {style.icon}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm text-gray-800">
+                            <p className="text-sm text-heading">
                               <span className="font-medium">{labels[act.action]}</span>
                               {" "}
-                              <span className="text-gray-500">{act.company} — {act.role}</span>
+                              <span className="text-body">{act.company} — {act.role}</span>
                             </p>
-                            {act.details && <p className="text-xs text-gray-400">{act.details}</p>}
+                            {act.details && <p className="text-xs text-muted">{act.details}</p>}
                           </div>
-                          <span className="text-xs text-gray-400 shrink-0">{timeAgo(act.createdAt)}</span>
+                          <span className="text-xs text-muted shrink-0">{timeAgo(act.createdAt)}</span>
                         </div>
                       );
                     })}
@@ -688,46 +716,46 @@ function Dashboard() {
           {/* ===== ADD TAB ===== */}
           {activeTab === "add" && (
             <div className="max-w-xl mx-auto">
-              <div className="bg-white rounded-xl border border-gray-200/60 p-8">
+              <div className="bg-card rounded-xl border border-line p-8">
                 <div className="mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900">Track New Application</h2>
-                  <p className="text-sm text-gray-400 mt-1">Fill in the details below to add a job to your tracker.</p>
+                  <h2 className="text-lg font-semibold text-heading">Track New Application</h2>
+                  <p className="text-sm text-muted mt-1">Fill in the details below to add a job to your tracker.</p>
                 </div>
 
                 <form onSubmit={createJob} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1.5">Company *</label>
+                      <label className="block text-xs font-medium text-body mb-1.5">Company *</label>
                       <input type="text" placeholder="e.g. Google" value={company} onChange={(e) => setCompany(e.target.value)} required className={inputClass} />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1.5">Role *</label>
+                      <label className="block text-xs font-medium text-body mb-1.5">Role *</label>
                       <input type="text" placeholder="e.g. Frontend Engineer" value={role} onChange={(e) => setRole(e.target.value)} required className={inputClass} />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Job Posting URL</label>
+                    <label className="block text-xs font-medium text-body mb-1.5">Job Posting URL</label>
                     <input type="url" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} className={inputClass} />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Notes</label>
+                    <label className="block text-xs font-medium text-body mb-1.5">Notes</label>
                     <textarea placeholder="Anything to remember about this application..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className={`${inputClass} resize-none`} />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Tags</label>
+                    <label className="block text-xs font-medium text-body mb-1.5">Tags</label>
                     <TagInput tags={formTags} setTags={setFormTags} allTags={allTags} />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Follow-Up Date</label>
+                    <label className="block text-xs font-medium text-body mb-1.5">Follow-Up Date</label>
                     <input type="date" value={followUpDate} onChange={(e) => setFollowUpDate(e.target.value)} className={inputClass} />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Status</label>
+                    <label className="block text-xs font-medium text-body mb-1.5">Status</label>
                     <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputClass}>
                       <option value="Applied">Applied</option>
                       <option value="Interview">Interview</option>
@@ -748,16 +776,16 @@ function Dashboard() {
           {activeTab === "applications" && (
             <>
               {/* Search + Filter Bar */}
-              <div className="bg-white rounded-xl border border-gray-200/60 p-4 mb-6">
+              <div className="bg-card rounded-xl border border-line p-4 mb-6">
                 <div className="flex flex-wrap gap-3">
                   <div className="relative flex-1 min-w-[200px]">
-                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     <input
                       type="text"
                       placeholder="Search by company or role..."
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 bg-gray-50/50 rounded-lg text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 focus:bg-white outline-none transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 border border-line-strong bg-input-bg rounded-lg text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 focus:bg-card outline-none transition-all"
                     />
                   </div>
                   <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className={`${inputClass} w-auto min-w-[140px]`}>
@@ -795,7 +823,7 @@ function Dashboard() {
                         console.log(error.response?.data || error.message);
                       }
                     }}
-                    className="flex items-center gap-1.5 px-3 py-2.5 border border-gray-200 bg-gray-50/50 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-2.5 border border-line-strong bg-input-bg rounded-lg text-sm text-body hover:bg-brand-50 hover:text-heading transition-all shrink-0"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
                     Export
@@ -805,10 +833,10 @@ function Dashboard() {
 
               {/* Job Table */}
               {filteredJobs.length === 0 ? (
-                <div className="bg-white rounded-xl border border-gray-200/60 p-12 text-center">
-                  <svg className="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                  <p className="text-gray-500 font-medium">No applications found</p>
-                  <p className="text-sm text-gray-400 mt-1">Try adjusting your filters or add a new application.</p>
+                <div className="bg-card rounded-xl border border-line p-12 text-center">
+                  <svg className="w-12 h-12 text-faint mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                  <p className="text-body font-medium">No applications found</p>
+                  <p className="text-sm text-muted mt-1">Try adjusting your filters or add a new application.</p>
                   <button onClick={() => setActiveTab("add")} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition-colors">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                     Add Application
@@ -819,13 +847,13 @@ function Dashboard() {
                   {filteredJobs.map((job) => (
                     <div
                       key={job._id}
-                      className="bg-white rounded-xl border border-gray-200/60 p-5 hover:border-brand-200 hover:shadow-sm transition-all group"
+                      className="bg-card rounded-xl border border-line p-5 hover:border-brand-200 hover:shadow-sm transition-all group"
                     >
                       <div className="flex items-start gap-4">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${
                           job.status === "Applied" ? "bg-brand-100 text-brand-700" :
                           job.status === "Interview" ? "bg-amber-100 text-amber-700" :
-                          job.status === "Offer" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-600"
+                          job.status === "Offer" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-body"
                         }`}>
                           {job.company.charAt(0).toUpperCase()}
                         </div>
@@ -833,15 +861,15 @@ function Dashboard() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <h3 className="text-sm font-semibold text-gray-900">{job.company}</h3>
-                              <p className="text-sm text-gray-500">{job.role}</p>
+                              <h3 className="text-sm font-semibold text-heading">{job.company}</h3>
+                              <p className="text-sm text-body">{job.role}</p>
                             </div>
-                            <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-gray-700"}`}>
+                            <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-heading"}`}>
                               {job.status}
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                          <div className="flex items-center gap-3 mt-2 text-xs text-muted">
                             {job.link && (
                               <a href={job.link} target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:text-brand-700 inline-flex items-center gap-1">
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" /><path strokeLinecap="round" strokeLinejoin="round" d="M10.172 13.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.102 1.101" /></svg>
@@ -888,22 +916,22 @@ function Dashboard() {
                             <div className="mt-2">
                               <button
                                 onClick={() => setExpandedTimeline(expandedTimeline === job._id ? null : job._id)}
-                                className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-brand-600 transition-colors"
+                                className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-brand-600 transition-colors"
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                 {job.timeline.length} {job.timeline.length === 1 ? "event" : "events"}
                                 <svg className={`w-3 h-3 transition-transform ${expandedTimeline === job._id ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                               </button>
                               {expandedTimeline === job._id && (
-                                <div className="mt-2 ml-1 border-l-2 border-gray-200 pl-4 space-y-2.5 py-1">
+                                <div className="mt-2 ml-1 border-l-2 border-line-strong pl-4 space-y-2.5 py-1">
                                   {[...job.timeline].reverse().map((entry, i) => (
                                     <div key={i} className="relative flex items-start gap-3">
                                       <div className={`absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full border-2 border-white ${STATUS_STYLES[entry.status]?.dot || "bg-gray-400"}`} />
                                       <div>
-                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLES[entry.status]?.badge || "bg-gray-100 text-gray-600"}`}>
+                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLES[entry.status]?.badge || "bg-gray-100 text-body"}`}>
                                           {entry.status}
                                         </span>
-                                        <p className="text-xs text-gray-400 mt-0.5">
+                                        <p className="text-xs text-muted mt-0.5">
                                           {new Date(entry.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                                           {" · "}
                                           {new Date(entry.date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
@@ -920,7 +948,7 @@ function Dashboard() {
                           <div className="flex gap-2 mt-3 flex-wrap opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => setEditJob({ ...job })}
-                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-50 text-body hover:bg-brand-100 transition-colors"
                             >
                               Edit
                             </button>
@@ -936,7 +964,7 @@ function Dashboard() {
                             >
                               Delete
                             </button>
-                            <div className="h-6 w-px bg-gray-200 mx-1" />
+                            <div className="h-6 w-px bg-line-strong mx-1" />
                             {["Applied", "Interview", "Offer", "Rejected"]
                               .filter((s) => s !== job.status)
                               .map((s) => (
@@ -962,33 +990,33 @@ function Dashboard() {
           {activeTab === "archived" && (
             <>
               {archivedJobs.length === 0 ? (
-                <div className="bg-white rounded-xl border border-gray-200/60 p-12 text-center">
-                  <svg className="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
-                  <p className="text-gray-500 font-medium">No archived applications</p>
-                  <p className="text-sm text-gray-400 mt-1">Applications you archive will appear here.</p>
+                <div className="bg-card rounded-xl border border-line p-12 text-center">
+                  <svg className="w-12 h-12 text-faint mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
+                  <p className="text-body font-medium">No archived applications</p>
+                  <p className="text-sm text-muted mt-1">Applications you archive will appear here.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {archivedJobs.map((job) => (
-                    <div key={job._id} className="bg-white rounded-xl border border-gray-200/60 p-5 opacity-75 hover:opacity-100 transition-all group">
+                    <div key={job._id} className="bg-card rounded-xl border border-line p-5 opacity-75 hover:opacity-100 transition-all group">
                       <div className="flex items-start gap-4">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 bg-gray-100 text-gray-500`}>
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 bg-brand-50 text-body`}>
                           {job.company.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <h3 className="text-sm font-semibold text-gray-900">{job.company}</h3>
-                              <p className="text-sm text-gray-500">{job.role}</p>
+                              <h3 className="text-sm font-semibold text-heading">{job.company}</h3>
+                              <p className="text-sm text-body">{job.role}</p>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
-                              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-500">Archived</span>
-                              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-gray-700"}`}>
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-brand-50 text-muted">Archived</span>
+                              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-heading"}`}>
                                 {job.status}
                               </span>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                          <div className="flex items-center gap-3 mt-2 text-xs text-muted">
                             {job.createdAt && <span>{timeAgo(job.createdAt)}</span>}
                           </div>
                           {job.tags && job.tags.length > 0 && (
@@ -1026,41 +1054,41 @@ function Dashboard() {
       {/* Edit Modal */}
       {editJob && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setEditJob(null)}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 border border-gray-200" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-card rounded-xl shadow-2xl w-full max-w-md p-6 border border-line-strong" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-semibold text-gray-900">Edit Application</h3>
-              <button onClick={() => setEditJob(null)} className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+              <h3 className="text-lg font-semibold text-heading">Edit Application</h3>
+              <button onClick={() => setEditJob(null)} className="p-1 text-muted hover:text-body rounded-lg hover:bg-brand-50">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Company</label>
+                <label className="block text-xs font-medium text-body mb-1.5">Company</label>
                 <input type="text" value={editJob.company} onChange={(e) => setEditJob({ ...editJob, company: e.target.value })} className={inputClass} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Role</label>
+                <label className="block text-xs font-medium text-body mb-1.5">Role</label>
                 <input type="text" value={editJob.role} onChange={(e) => setEditJob({ ...editJob, role: e.target.value })} className={inputClass} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Job URL</label>
+                <label className="block text-xs font-medium text-body mb-1.5">Job URL</label>
                 <input type="url" value={editJob.link || ""} onChange={(e) => setEditJob({ ...editJob, link: e.target.value })} className={inputClass} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Notes</label>
+                <label className="block text-xs font-medium text-body mb-1.5">Notes</label>
                 <textarea value={editJob.notes || ""} onChange={(e) => setEditJob({ ...editJob, notes: e.target.value })} rows={3} className={`${inputClass} resize-none`} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Tags</label>
+                <label className="block text-xs font-medium text-body mb-1.5">Tags</label>
                 <TagInput tags={editJob.tags || []} setTags={(tags) => setEditJob({ ...editJob, tags })} allTags={allTags} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Follow-Up Date</label>
+                <label className="block text-xs font-medium text-body mb-1.5">Follow-Up Date</label>
                 <input type="date" value={editJob.followUpDate ? new Date(editJob.followUpDate).toISOString().split("T")[0] : ""} onChange={(e) => setEditJob({ ...editJob, followUpDate: e.target.value || null })} className={inputClass} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Status</label>
+                <label className="block text-xs font-medium text-body mb-1.5">Status</label>
                 <select value={editJob.status} onChange={(e) => setEditJob({ ...editJob, status: e.target.value })} className={inputClass}>
                   <option value="Applied">Applied</option>
                   <option value="Interview">Interview</option>
@@ -1077,7 +1105,7 @@ function Dashboard() {
               >
                 Save Changes
               </button>
-              <button onClick={() => setEditJob(null)} className="px-5 py-2.5 border border-gray-200 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+              <button onClick={() => setEditJob(null)} className="px-5 py-2.5 border border-line-strongtext-body rounded-lg text-sm font-medium hover:bg-brand-50/50 transition-colors">
                 Cancel
               </button>
             </div>
@@ -1088,18 +1116,18 @@ function Dashboard() {
       {/* Delete Confirmation Modal */}
       {deleteTarget && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setDeleteTarget(null)}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 text-center border border-gray-200" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-card rounded-xl shadow-2xl w-full max-w-sm p-6 text-center border border-line-strong" onClick={(e) => e.stopPropagation()}>
             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">Delete Application?</h3>
-            <p className="text-sm text-gray-500 mb-6">
-              <span className="font-medium text-gray-700">{deleteTarget.company} — {deleteTarget.role}</span> will be permanently removed.
+            <h3 className="text-lg font-semibold text-heading mb-1">Delete Application?</h3>
+            <p className="text-sm text-body mb-6">
+              <span className="font-medium text-heading">{deleteTarget.company} — {deleteTarget.role}</span> will be permanently removed.
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setDeleteTarget(null)} className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+              <button onClick={() => setDeleteTarget(null)} className="flex-1 px-4 py-2.5 border border-line-strongtext-body rounded-lg text-sm font-medium hover:bg-brand-50/50 transition-colors">
                 Cancel
               </button>
               <button onClick={() => deleteJob(deleteTarget._id)} className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors">
@@ -1116,6 +1144,11 @@ function Dashboard() {
 function App() {
   const token = localStorage.getItem("token");
   const [page, setPage] = useState("landing");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") document.documentElement.classList.add("dark");
+  }, []);
 
   if (token) return <Dashboard />;
 

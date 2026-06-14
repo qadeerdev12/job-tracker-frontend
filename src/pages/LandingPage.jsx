@@ -1,14 +1,14 @@
 function LandingPage({ setPage }) {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-page">
       {/* Navbar */}
-      <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-brand-100">
+      <nav className="fixed top-0 w-full bg-topbar backdrop-blur-md z-50 border-b border-line">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><rect x="3" y="7" width="18" height="13" rx="2" strokeLinecap="round" strokeLinejoin="round" /><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5.5A1.5 1.5 0 019.5 4h5A1.5 1.5 0 0116 5.5V7" /><polyline points="9,13.5 11,15.5 15,11.5" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></svg>
             </div>
-            <span className="text-2xl font-extrabold text-brand-700">ApplyFlow</span>
+            <span className="text-2xl font-extrabold text-brand-600">ApplyFlow</span>
           </div>
           <div className="flex gap-3">
             <button
@@ -60,51 +60,51 @@ function LandingPage({ setPage }) {
       </section>
 
       {/* Features */}
-      <section className="py-20 px-6 bg-surface">
+      <section className="py-20 px-6 bg-page">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-center text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-center text-heading mb-4">
             Everything you need to manage your job search
           </h2>
-          <p className="text-center text-gray-500 mb-14 max-w-2xl mx-auto">
+          <p className="text-center text-body mb-14 max-w-2xl mx-auto">
             Simple, powerful, and designed to keep you on track
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="bg-surface-card rounded-2xl shadow-lg hover:shadow-xl transition-shadow p-8 text-center">
+            <div className="bg-card rounded-2xl shadow-lg hover:shadow-xl transition-shadow p-8 text-center border border-line">
               <div className="w-16 h-16 bg-gradient-to-br from-brand-400 to-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 13h2v8H3zm6-4h2v12H9zm6-6h2v18h-2zm6 10h2v8h-2z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Visual Dashboard</h3>
-              <p className="text-gray-500">
+              <h3 className="text-xl font-bold text-heading mb-3">Visual Dashboard</h3>
+              <p className="text-body">
                 See your application stats at a glance with beautiful charts and color-coded status cards.
               </p>
             </div>
 
             {/* Feature 2 */}
-            <div className="bg-surface-card rounded-2xl shadow-lg hover:shadow-xl transition-shadow p-8 text-center">
+            <div className="bg-card rounded-2xl shadow-lg hover:shadow-xl transition-shadow p-8 text-center border border-line">
               <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Smart Tracking</h3>
-              <p className="text-gray-500">
+              <h3 className="text-xl font-bold text-heading mb-3">Smart Tracking</h3>
+              <p className="text-body">
                 Log companies, roles, and statuses. Filter and search through your applications in seconds.
               </p>
             </div>
 
             {/* Feature 3 */}
-            <div className="bg-surface-card rounded-2xl shadow-lg hover:shadow-xl transition-shadow p-8 text-center">
+            <div className="bg-card rounded-2xl shadow-lg hover:shadow-xl transition-shadow p-8 text-center border border-line">
               <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Stay Organized</h3>
-              <p className="text-gray-500">
+              <h3 className="text-xl font-bold text-heading mb-3">Stay Organized</h3>
+              <p className="text-body">
                 Never lose track of an opportunity. Update statuses as you progress through the hiring pipeline.
               </p>
             </div>
@@ -131,15 +131,15 @@ function LandingPage({ setPage }) {
       </section>
 
       {/* Footer */}
-      <footer className="bg-surface-dark py-8 px-6">
+      <footer className="bg-sidebar py-8 px-6">
         <div className="max-w-6xl mx-auto text-center">
           <div className="flex items-center gap-2 justify-center">
             <div className="w-6 h-6 bg-gradient-to-br from-brand-400 to-brand-600 rounded-md flex items-center justify-center">
               <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><rect x="3" y="7" width="18" height="13" rx="2" strokeLinecap="round" strokeLinejoin="round" /><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5.5A1.5 1.5 0 019.5 4h5A1.5 1.5 0 0116 5.5V7" /><polyline points="9,13.5 11,15.5 15,11.5" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" /></svg>
             </div>
-            <span className="text-brand-300 font-bold">ApplyFlow</span>
+            <span className="text-brand-400 font-bold">ApplyFlow</span>
           </div>
-          <p className="text-gray-500 text-sm mt-2">&copy; 2026 ApplyFlow. All rights reserved.</p>
+          <p className="text-muted text-sm mt-2">&copy; 2026 ApplyFlow. All rights reserved.</p>
         </div>
       </footer>
     </div>
