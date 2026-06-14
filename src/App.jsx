@@ -18,6 +18,98 @@ const CHART_COLORS = ["#6366f1", "#f59e0b", "#10b981", "#6b7280"];
 
 const inputClass = "w-full border border-gray-200 bg-gray-50/50 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 focus:bg-white outline-none transition-all";
 
+const PRESET_TAGS = ["Remote", "On-site", "Hybrid", "Frontend", "Backend", "Full Stack", "Graduate", "Contract", "Full-time", "Part-time", "Visa Sponsorship", "Internship"];
+
+const TAG_COLORS = [
+  "bg-blue-100 text-blue-700",
+  "bg-purple-100 text-purple-700",
+  "bg-pink-100 text-pink-700",
+  "bg-teal-100 text-teal-700",
+  "bg-orange-100 text-orange-700",
+  "bg-cyan-100 text-cyan-700",
+  "bg-rose-100 text-rose-700",
+  "bg-indigo-100 text-indigo-700",
+  "bg-lime-100 text-lime-700",
+  "bg-fuchsia-100 text-fuchsia-700",
+];
+
+function getTagColor(tag) {
+  let hash = 0;
+  for (let i = 0; i < tag.length; i++) hash = tag.charCodeAt(i) + ((hash << 5) - hash);
+  return TAG_COLORS[Math.abs(hash) % TAG_COLORS.length];
+}
+
+function TagInput({ tags, setTags, allTags }) {
+  const [input, setInput] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const suggestions = [...new Set([...PRESET_TAGS, ...allTags])]
+    .filter((t) => !tags.includes(t) && t.toLowerCase().includes(input.toLowerCase()))
+    .slice(0, 8);
+
+  const addTag = (tag) => {
+    const trimmed = tag.trim();
+    if (trimmed && !tags.includes(trimmed)) {
+      setTags([...tags, trimmed]);
+    }
+    setInput("");
+    setShowSuggestions(false);
+  };
+
+  const removeTag = (tag) => setTags(tags.filter((t) => t !== tag));
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && input.trim()) {
+      e.preventDefault();
+      addTag(input);
+    }
+    if (e.key === "Backspace" && !input && tags.length > 0) {
+      removeTag(tags[tags.length - 1]);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <div className={`${inputClass} flex flex-wrap gap-1.5 min-h-[42px] py-1.5 px-2.5 cursor-text`} onClick={() => document.getElementById("tag-input-field")?.focus()}>
+        {tags.map((tag) => (
+          <span key={tag} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${getTagColor(tag)}`}>
+            {tag}
+            <button type="button" onClick={(e) => { e.stopPropagation(); removeTag(tag); }} className="hover:opacity-70">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </span>
+        ))}
+        <input
+          id="tag-input-field"
+          type="text"
+          value={input}
+          onChange={(e) => { setInput(e.target.value); setShowSuggestions(true); }}
+          onFocus={() => setShowSuggestions(true)}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+          onKeyDown={handleKeyDown}
+          placeholder={tags.length === 0 ? "Type or select tags..." : ""}
+          className="flex-1 min-w-[100px] outline-none bg-transparent text-sm py-1"
+        />
+      </div>
+      {showSuggestions && suggestions.length > 0 && (
+        <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+          {suggestions.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => addTag(tag)}
+              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
+            >
+              <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-medium mr-2 ${getTagColor(tag)}`}>{tag}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function decodeToken(token) {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
@@ -71,6 +163,8 @@ function Sidebar({ activeTab, setActiveTab, handleLogout, initials, userName }) 
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg> },
     { id: "applications", label: "Applications", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg> },
+    { id: "archived", label: "Archived", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg> },
+    { id: "activity", label: "Activity", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
     { id: "add", label: "Add New", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg> },
   ];
 
@@ -132,14 +226,22 @@ function Dashboard() {
   const [status, setStatus] = useState("Applied");
   const [link, setLink] = useState("");
   const [notes, setNotes] = useState("");
+  const [followUpDate, setFollowUpDate] = useState("");
+  const [formTags, setFormTags] = useState([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
+  const [filterTag, setFilterTag] = useState("All");
   const [sortBy, setSortBy] = useState("newest");
   const [activeTab, setActiveTab] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [allTags, setAllTags] = useState([]);
 
+  const [archivedJobs, setArchivedJobs] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [editJob, setEditJob] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [expandedTimeline, setExpandedTimeline] = useState(null);
+  const [reminders, setReminders] = useState([]);
 
   const token = localStorage.getItem("token");
   const user = useMemo(() => decodeToken(token), [token]);
@@ -170,22 +272,67 @@ function Dashboard() {
     }
   };
 
+  const fetchTags = async () => {
+    try {
+      const res = await axios.get(`${API}/api/jobs/tags`, authHeader());
+      setAllTags(res.data);
+    } catch (error) {
+      console.log(error.response?.data || error.message);
+    }
+  };
+
+  const fetchActivities = async () => {
+    try {
+      const res = await axios.get(`${API}/api/jobs/activities`, authHeader());
+      setActivities(res.data);
+    } catch (error) {
+      console.log(error.response?.data || error.message);
+    }
+  };
+
+  const fetchReminders = async () => {
+    try {
+      const res = await axios.get(`${API}/api/jobs/reminders`, authHeader());
+      setReminders(res.data);
+    } catch (error) {
+      console.log(error.response?.data || error.message);
+    }
+  };
+
+  const fetchArchivedJobs = async () => {
+    try {
+      const res = await axios.get(`${API}/api/jobs?archived=true`, authHeader());
+      setArchivedJobs(res.data);
+    } catch (error) {
+      console.log(error.response?.data || error.message);
+    }
+  };
+
   useEffect(() => {
     fetchJobs();
     fetchStats();
+    fetchTags();
+    fetchArchivedJobs();
+    fetchActivities();
+    fetchReminders();
   }, []);
 
   const createJob = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API}/api/jobs`, { company, role, status, link, notes }, authHeader());
+      await axios.post(`${API}/api/jobs`, { company, role, status, link, notes, tags: formTags, followUpDate: followUpDate || null }, authHeader());
       fetchJobs();
       fetchStats();
+      fetchTags();
+      fetchActivities();
+      fetchReminders();
       setCompany("");
       setRole("");
       setStatus("Applied");
       setLink("");
       setNotes("");
+      setFollowUpDate("");
+      setFormTags([]);
       setActiveTab("applications");
     } catch (error) {
       console.log(error.response?.data || error.message);
@@ -197,6 +344,10 @@ function Dashboard() {
       await axios.delete(`${API}/api/jobs/${jobId}`, authHeader());
       fetchJobs();
       fetchStats();
+      fetchTags();
+      fetchArchivedJobs();
+      fetchActivities();
+      fetchReminders();
       setDeleteTarget(null);
     } catch (error) {
       console.log(error.response?.data || error.message);
@@ -208,7 +359,23 @@ function Dashboard() {
       await axios.put(`${API}/api/jobs/${jobId}`, data, authHeader());
       fetchJobs();
       fetchStats();
+      fetchTags();
+      fetchActivities();
+      fetchReminders();
       setEditJob(null);
+    } catch (error) {
+      console.log(error.response?.data || error.message);
+    }
+  };
+
+  const archiveJob = async (jobId, archive) => {
+    try {
+      await axios.put(`${API}/api/jobs/${jobId}`, { archived: archive }, authHeader());
+      fetchJobs();
+      fetchStats();
+      fetchArchivedJobs();
+      fetchActivities();
+      fetchReminders();
     } catch (error) {
       console.log(error.response?.data || error.message);
     }
@@ -225,7 +392,8 @@ function Dashboard() {
         job.company.toLowerCase().includes(search.toLowerCase()) ||
         job.role.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = filterStatus === "All" || job.status === filterStatus;
-      return matchesSearch && matchesStatus;
+      const matchesTag = filterTag === "All" || (job.tags && job.tags.includes(filterTag));
+      return matchesSearch && matchesStatus && matchesTag;
     })
     .sort((a, b) => {
       if (sortBy === "newest") return new Date(b.createdAt) - new Date(a.createdAt);
@@ -302,11 +470,15 @@ function Dashboard() {
                 <h1 className="text-lg font-semibold text-gray-900">
                   {activeTab === "dashboard" && "Dashboard"}
                   {activeTab === "applications" && "Applications"}
+                  {activeTab === "archived" && "Archived"}
+                  {activeTab === "activity" && "Activity Log"}
                   {activeTab === "add" && "New Application"}
                 </h1>
                 <p className="text-xs text-gray-400">
                   {activeTab === "dashboard" && `Welcome back, ${firstName}`}
                   {activeTab === "applications" && `${filteredJobs.length} of ${jobs.length} shown`}
+                  {activeTab === "archived" && `${archivedJobs.length} archived application${archivedJobs.length !== 1 ? "s" : ""}`}
+                  {activeTab === "activity" && `${activities.length} recent action${activities.length !== 1 ? "s" : ""}`}
                   {activeTab === "add" && "Track a new job application"}
                 </p>
               </div>
@@ -385,6 +557,49 @@ function Dashboard() {
                 </div>
               </div>
 
+              {/* Follow-Up Reminders */}
+              {reminders.length > 0 && (
+                <div className="bg-white rounded-xl border border-gray-200/60 p-6 mb-8">
+                  <div className="flex items-center justify-between mb-5">
+                    <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+                      Follow-Up Reminders
+                    </h3>
+                    <span className="text-xs text-gray-400">{reminders.length} pending</span>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {reminders.slice(0, 5).map((job) => {
+                      const today = new Date(); today.setHours(0,0,0,0);
+                      const fDate = new Date(job.followUpDate); fDate.setHours(0,0,0,0);
+                      const diffDays = Math.ceil((fDate - today) / 86400000);
+                      const isOverdue = diffDays < 0;
+                      const isToday = diffDays === 0;
+                      return (
+                        <div key={job._id} className="flex items-center gap-4 py-3.5 first:pt-0 last:pb-0">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
+                            isOverdue ? "bg-red-100 text-red-600" : isToday ? "bg-amber-100 text-amber-600" : "bg-blue-100 text-blue-600"
+                          }`}>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-gray-800 truncate">{job.company}</p>
+                            <p className="text-xs text-gray-400 truncate">{job.role}</p>
+                          </div>
+                          <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                            isOverdue ? "bg-red-100 text-red-700" : isToday ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"
+                          }`}>
+                            {isOverdue ? `Overdue ${Math.abs(diffDays)}d` : isToday ? "Due today" : `In ${diffDays}d`}
+                          </span>
+                          <span className="text-xs text-gray-400 shrink-0">
+                            {new Date(job.followUpDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Recent Activity */}
               <div className="bg-white rounded-xl border border-gray-200/60 p-6">
                 <div className="flex items-center justify-between mb-5">
@@ -392,7 +607,7 @@ function Dashboard() {
                   <button onClick={() => setActiveTab("applications")} className="text-xs text-brand-600 hover:text-brand-700 font-medium">View all</button>
                 </div>
                 {recentActivity.length === 0 ? (
-                  <p className="text-gray-400 text-sm text-center py-8">No activity yet — add your first application!</p>
+                  <p className="text-gray-400 text-sm text-center py-8">No applications yet — add your first one!</p>
                 ) : (
                   <div className="divide-y divide-gray-100">
                     {recentActivity.map((job) => (
@@ -413,6 +628,60 @@ function Dashboard() {
                   </div>
                 )}
               </div>
+
+            </>
+          )}
+
+          {/* ===== ACTIVITY TAB ===== */}
+          {activeTab === "activity" && (
+            <>
+              {activities.length === 0 ? (
+                <div className="bg-white rounded-xl border border-gray-200/60 p-12 text-center">
+                  <svg className="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <p className="text-gray-500 font-medium">No activity yet</p>
+                  <p className="text-sm text-gray-400 mt-1">Actions like adding, updating, and archiving jobs will appear here.</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200/60 p-6">
+                  <div className="divide-y divide-gray-100">
+                    {activities.map((act) => {
+                      const icons = {
+                        created: { bg: "bg-emerald-100", color: "text-emerald-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg> },
+                        status_change: { bg: "bg-blue-100", color: "text-blue-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg> },
+                        archived: { bg: "bg-orange-100", color: "text-orange-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg> },
+                        restored: { bg: "bg-brand-100", color: "text-brand-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg> },
+                        deleted: { bg: "bg-red-100", color: "text-red-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg> },
+                        edited: { bg: "bg-gray-100", color: "text-gray-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg> },
+                      };
+                      const labels = {
+                        created: "Added",
+                        status_change: "Status changed",
+                        archived: "Archived",
+                        restored: "Restored",
+                        deleted: "Deleted",
+                        edited: "Edited",
+                      };
+                      const style = icons[act.action] || icons.edited;
+                      return (
+                        <div key={act._id} className="flex items-center gap-3 py-3.5 first:pt-0 last:pb-0">
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${style.bg} ${style.color}`}>
+                            {style.icon}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm text-gray-800">
+                              <span className="font-medium">{labels[act.action]}</span>
+                              {" "}
+                              <span className="text-gray-500">{act.company} — {act.role}</span>
+                            </p>
+                            {act.details && <p className="text-xs text-gray-400">{act.details}</p>}
+                          </div>
+                          <span className="text-xs text-gray-400 shrink-0">{timeAgo(act.createdAt)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </>
           )}
 
@@ -445,6 +714,16 @@ function Dashboard() {
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1.5">Notes</label>
                     <textarea placeholder="Anything to remember about this application..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className={`${inputClass} resize-none`} />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Tags</label>
+                    <TagInput tags={formTags} setTags={setFormTags} allTags={allTags} />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Follow-Up Date</label>
+                    <input type="date" value={followUpDate} onChange={(e) => setFollowUpDate(e.target.value)} className={inputClass} />
                   </div>
 
                   <div>
@@ -488,12 +767,39 @@ function Dashboard() {
                     <option value="Offer">Offer</option>
                     <option value="Rejected">Rejected</option>
                   </select>
+                  {allTags.length > 0 && (
+                    <select value={filterTag} onChange={(e) => setFilterTag(e.target.value)} className={`${inputClass} w-auto min-w-[130px]`}>
+                      <option value="All">All Tags</option>
+                      {allTags.map((tag) => (
+                        <option key={tag} value={tag}>{tag}</option>
+                      ))}
+                    </select>
+                  )}
                   <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className={`${inputClass} w-auto min-w-[140px]`}>
                     <option value="newest">Newest First</option>
                     <option value="oldest">Oldest First</option>
                     <option value="company">Company A-Z</option>
                     <option value="status">By Status</option>
                   </select>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await axios.get(`${API}/api/jobs/export`, { ...authHeader(), responseType: "blob" });
+                        const url = window.URL.createObjectURL(new Blob([res.data]));
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = "applyflow-export.csv";
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                      } catch (error) {
+                        console.log(error.response?.data || error.message);
+                      }
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-2.5 border border-gray-200 bg-gray-50/50 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all shrink-0"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                    Export
+                  </button>
                 </div>
               </div>
 
@@ -551,7 +857,64 @@ function Dashboard() {
                             {job.createdAt && (
                               <span>{timeAgo(job.createdAt)}</span>
                             )}
+                            {job.followUpDate && (() => {
+                              const today = new Date(); today.setHours(0,0,0,0);
+                              const fDate = new Date(job.followUpDate); fDate.setHours(0,0,0,0);
+                              const diffDays = Math.ceil((fDate - today) / 86400000);
+                              const isOverdue = diffDays < 0;
+                              const isToday = diffDays === 0;
+                              const isSoon = diffDays > 0 && diffDays <= 3;
+                              return (
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                                  isOverdue ? "bg-red-100 text-red-700" : isToday ? "bg-amber-100 text-amber-700" : isSoon ? "bg-yellow-100 text-yellow-700" : "bg-blue-100 text-blue-700"
+                                }`}>
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+                                  {isOverdue ? `Overdue ${Math.abs(diffDays)}d` : isToday ? "Due today" : `Due in ${diffDays}d`}
+                                </span>
+                              );
+                            })()}
                           </div>
+
+                          {job.tags && job.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {job.tags.map((tag) => (
+                                <span key={tag} className={`px-2 py-0.5 rounded-md text-xs font-medium ${getTagColor(tag)}`}>{tag}</span>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Timeline */}
+                          {job.timeline && job.timeline.length > 0 && (
+                            <div className="mt-2">
+                              <button
+                                onClick={() => setExpandedTimeline(expandedTimeline === job._id ? null : job._id)}
+                                className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-brand-600 transition-colors"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                {job.timeline.length} {job.timeline.length === 1 ? "event" : "events"}
+                                <svg className={`w-3 h-3 transition-transform ${expandedTimeline === job._id ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                              </button>
+                              {expandedTimeline === job._id && (
+                                <div className="mt-2 ml-1 border-l-2 border-gray-200 pl-4 space-y-2.5 py-1">
+                                  {[...job.timeline].reverse().map((entry, i) => (
+                                    <div key={i} className="relative flex items-start gap-3">
+                                      <div className={`absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full border-2 border-white ${STATUS_STYLES[entry.status]?.dot || "bg-gray-400"}`} />
+                                      <div>
+                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLES[entry.status]?.badge || "bg-gray-100 text-gray-600"}`}>
+                                          {entry.status}
+                                        </span>
+                                        <p className="text-xs text-gray-400 mt-0.5">
+                                          {new Date(entry.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                                          {" · "}
+                                          {new Date(entry.date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
 
                           {/* Actions */}
                           <div className="flex gap-2 mt-3 flex-wrap opacity-0 group-hover:opacity-100 transition-opacity">
@@ -560,6 +923,12 @@ function Dashboard() {
                               className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
                             >
                               Edit
+                            </button>
+                            <button
+                              onClick={() => archiveJob(job._id, true)}
+                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors"
+                            >
+                              Archive
                             </button>
                             <button
                               onClick={() => setDeleteTarget(job)}
@@ -579,6 +948,69 @@ function Dashboard() {
                                   {s}
                                 </button>
                               ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ===== ARCHIVED TAB ===== */}
+          {activeTab === "archived" && (
+            <>
+              {archivedJobs.length === 0 ? (
+                <div className="bg-white rounded-xl border border-gray-200/60 p-12 text-center">
+                  <svg className="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
+                  <p className="text-gray-500 font-medium">No archived applications</p>
+                  <p className="text-sm text-gray-400 mt-1">Applications you archive will appear here.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {archivedJobs.map((job) => (
+                    <div key={job._id} className="bg-white rounded-xl border border-gray-200/60 p-5 opacity-75 hover:opacity-100 transition-all group">
+                      <div className="flex items-start gap-4">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 bg-gray-100 text-gray-500`}>
+                          {job.company.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <h3 className="text-sm font-semibold text-gray-900">{job.company}</h3>
+                              <p className="text-sm text-gray-500">{job.role}</p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-500">Archived</span>
+                              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-gray-700"}`}>
+                                {job.status}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                            {job.createdAt && <span>{timeAgo(job.createdAt)}</span>}
+                          </div>
+                          {job.tags && job.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {job.tags.map((tag) => (
+                                <span key={tag} className={`px-2 py-0.5 rounded-md text-xs font-medium ${getTagColor(tag)}`}>{tag}</span>
+                              ))}
+                            </div>
+                          )}
+                          <div className="flex gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => archiveJob(job._id, false)}
+                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-50 text-brand-600 hover:bg-brand-100 transition-colors"
+                            >
+                              Restore
+                            </button>
+                            <button
+                              onClick={() => setDeleteTarget(job)}
+                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                            >
+                              Delete
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -620,6 +1052,14 @@ function Dashboard() {
                 <textarea value={editJob.notes || ""} onChange={(e) => setEditJob({ ...editJob, notes: e.target.value })} rows={3} className={`${inputClass} resize-none`} />
               </div>
               <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Tags</label>
+                <TagInput tags={editJob.tags || []} setTags={(tags) => setEditJob({ ...editJob, tags })} allTags={allTags} />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Follow-Up Date</label>
+                <input type="date" value={editJob.followUpDate ? new Date(editJob.followUpDate).toISOString().split("T")[0] : ""} onChange={(e) => setEditJob({ ...editJob, followUpDate: e.target.value || null })} className={inputClass} />
+              </div>
+              <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1.5">Status</label>
                 <select value={editJob.status} onChange={(e) => setEditJob({ ...editJob, status: e.target.value })} className={inputClass}>
                   <option value="Applied">Applied</option>
@@ -632,7 +1072,7 @@ function Dashboard() {
 
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => updateJob(editJob._id, { company: editJob.company, role: editJob.role, status: editJob.status, link: editJob.link, notes: editJob.notes })}
+                onClick={() => updateJob(editJob._id, { company: editJob.company, role: editJob.role, status: editJob.status, link: editJob.link, notes: editJob.notes, tags: editJob.tags || [], followUpDate: editJob.followUpDate || null })}
                 className="flex-1 bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-lg text-sm font-medium shadow-sm transition-colors"
               >
                 Save Changes
