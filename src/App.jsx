@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, Cart
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import LandingPage from "./pages/LandingPage";
+import { supabase } from "./lib/supabase";
 
 const API = "https://job-tracker-backend-s1fc.onrender.com";
 
@@ -109,15 +110,6 @@ function TagInput({ tags, setTags, allTags }) {
       )}
     </div>
   );
-}
-
-function decodeToken(token) {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload;
-  } catch {
-    return null;
-  }
 }
 
 function timeAgo(dateStr) {
@@ -267,15 +259,20 @@ function Dashboard() {
   const [expandedTimeline, setExpandedTimeline] = useState(null);
   const [reminders, setReminders] = useState([]);
 
-  const token = localStorage.getItem("token");
-  const user = useMemo(() => decodeToken(token), [token]);
-  const firstName = user?.name?.split(" ")[0] || "there";
-  const initials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
-    : "?";
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session: s } }) => setSession(s));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const userName = session?.user?.user_metadata?.name || session?.user?.user_metadata?.full_name || session?.user?.email?.split("@")[0] || "User";
+  const firstName = userName.split(" ")[0];
+  const initials = userName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
   const authHeader = () => ({
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { Authorization: `Bearer ${session?.access_token}` },
   });
 
   const fetchJobs = async () => {
@@ -405,9 +402,8 @@ function Dashboard() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    window.location.reload();
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
   };
 
   const filteredJobs = jobs
@@ -477,7 +473,7 @@ function Dashboard() {
           setActiveTab={(tab) => { setActiveTab(tab); setSidebarOpen(false); }}
           handleLogout={handleLogout}
           initials={initials}
-          userName={user?.name || "User"}
+          userName={userName}
         />
       </div>
 
@@ -1142,15 +1138,33 @@ function Dashboard() {
 }
 
 function App() {
-  const token = localStorage.getItem("token");
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState("landing");
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
     if (saved === "dark") document.documentElement.classList.add("dark");
+
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  if (token) return <Dashboard />;
+  if (loading) return (
+    <div className="min-h-screen bg-page flex items-center justify-center">
+      <div className="text-brand-600 text-lg font-semibold">Loading...</div>
+    </div>
+  );
+
+  if (session) return <Dashboard />;
 
   if (page === "landing") return <LandingPage setPage={setPage} />;
   if (page === "register") return <Register setPage={setPage} />;
