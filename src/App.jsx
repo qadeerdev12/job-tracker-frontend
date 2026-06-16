@@ -445,6 +445,45 @@ function Dashboard() {
 
   const totalApps = stats.Applied + stats.Interview + stats.Offer + stats.Rejected;
 
+  const responseRate = totalApps > 0 ? Math.round(((stats.Interview + stats.Offer) / totalApps) * 100) : 0;
+  const successRate = totalApps > 0 ? Math.round((stats.Offer / totalApps) * 100) : 0;
+  const avgDaysToInterview = useMemo(() => {
+    const interviewJobs = jobs.filter((j) => j.timeline && j.timeline.some((t) => t.status === "Interview"));
+    if (interviewJobs.length === 0) return null;
+    const totalDays = interviewJobs.reduce((sum, j) => {
+      const applied = new Date(j.createdAt);
+      const interview = j.timeline.find((t) => t.status === "Interview");
+      return sum + Math.max(0, Math.ceil((new Date(interview.date) - applied) / 86400000));
+    }, 0);
+    return Math.round(totalDays / interviewJobs.length);
+  }, [jobs]);
+
+  const monthlyData = useMemo(() => {
+    const months = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+      const count = jobs.filter((j) => {
+        const c = new Date(j.createdAt);
+        return c >= d && c <= end;
+      }).length;
+      months.push({ month: d.toLocaleDateString("en-US", { month: "short" }), count });
+    }
+    return months;
+  }, [jobs]);
+
+  const funnelData = useMemo(() => {
+    const applied = totalApps;
+    const interviewed = stats.Interview + stats.Offer;
+    const offered = stats.Offer;
+    return [
+      { stage: "Applied", count: applied, pct: 100 },
+      { stage: "Interview", count: interviewed, pct: applied > 0 ? Math.round((interviewed / applied) * 100) : 0 },
+      { stage: "Offer", count: offered, pct: applied > 0 ? Math.round((offered / applied) * 100) : 0 },
+    ];
+  }, [totalApps, stats]);
+
   const statCards = [
     { label: "Total", count: totalApps, color: "brand", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg> },
     { label: "Applied", count: stats.Applied, color: "brand", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg> },
@@ -579,6 +618,104 @@ function Dashboard() {
                       <Bar dataKey="count" fill={isDark ? "#3b82f6" : "#4f46e5"} radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Analytics Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div className="bg-card rounded-xl border border-line p-5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted">Response Rate</p>
+                      <p className="text-2xl font-bold text-heading">{responseRate}%</p>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                    <div className="bg-blue-500 h-2 rounded-full transition-all" style={{ width: `${responseRate}%` }} />
+                  </div>
+                  <p className="text-xs text-muted mt-2">Applications that got a response</p>
+                </div>
+
+                <div className="bg-card rounded-xl border border-line p-5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M18.75 4.236c.982.143 1.954.317 2.916.52A6.003 6.003 0 0016.27 9.728M18.75 4.236V4.5c0 2.108-.966 3.99-2.48 5.228m0 0a6.023 6.023 0 01-2.27.308 6.023 6.023 0 01-2.27-.308" /></svg>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted">Success Rate</p>
+                      <p className="text-2xl font-bold text-heading">{successRate}%</p>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                    <div className="bg-emerald-500 h-2 rounded-full transition-all" style={{ width: `${successRate}%` }} />
+                  </div>
+                  <p className="text-xs text-muted mt-2">Applications that reached Offer</p>
+                </div>
+
+                <div className="bg-card rounded-xl border border-line p-5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-9 h-9 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted">Avg. Time to Interview</p>
+                      <p className="text-2xl font-bold text-heading">{avgDaysToInterview !== null ? `${avgDaysToInterview}d` : "—"}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted mt-4">Average days from application to interview</p>
+                </div>
+              </div>
+
+              {/* Monthly Trend & Funnel Row */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                {/* Monthly Trend */}
+                <div className="bg-card rounded-xl border border-line p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold text-heading">Monthly Trend</h3>
+                    <span className="text-xs text-muted">Last 6 months</span>
+                  </div>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <BarChart data={monthlyData} barSize={28}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line-strong)" vertical={false} />
+                      <XAxis dataKey="month" tick={{ fontSize: 12, fill: "var(--color-muted)" }} axisLine={false} tickLine={false} />
+                      <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "var(--color-muted)" }} axisLine={false} tickLine={false} />
+                      <Tooltip contentStyle={{ borderRadius: "8px", border: "1px solid var(--color-line-strong)", fontSize: "13px", backgroundColor: "var(--color-card)", color: "var(--color-heading)" }} />
+                      <Bar dataKey="count" fill={isDark ? "#60a5fa" : "#6366f1"} radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Status Funnel */}
+                <div className="bg-card rounded-xl border border-line p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold text-heading">Application Funnel</h3>
+                    <span className="text-xs text-muted">Conversion rates</span>
+                  </div>
+                  <div className="space-y-4 mt-6">
+                    {funnelData.map((item, i) => {
+                      const colors = ["bg-brand-500", "bg-amber-500", "bg-emerald-500"];
+                      const bgColors = ["bg-brand-100 dark:bg-brand-900/30", "bg-amber-100 dark:bg-amber-900/30", "bg-emerald-100 dark:bg-emerald-900/30"];
+                      return (
+                        <div key={item.stage}>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-sm font-medium text-heading">{item.stage}</span>
+                            <span className="text-sm text-muted">{item.count} <span className="text-xs">({item.pct}%)</span></span>
+                          </div>
+                          <div className={`w-full rounded-full h-3 ${bgColors[i]}`}>
+                            <div className={`${colors[i]} h-3 rounded-full transition-all duration-500`} style={{ width: `${item.pct}%`, minWidth: item.count > 0 ? "8px" : "0" }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {totalApps > 0 && (
+                    <p className="text-xs text-muted mt-5 text-center">
+                      {responseRate > 30 ? "Great response rate! Keep it up." : responseRate > 15 ? "Solid progress — keep applying!" : "Tip: Tailor each application to boost response rates."}
+                    </p>
+                  )}
                 </div>
               </div>
 
