@@ -11,7 +11,7 @@ const STATUS_STYLES = {
   Applied: { badge: "bg-brand-100 text-brand-700", btn: "bg-brand-50 text-brand-600 hover:bg-brand-100", dot: "bg-brand-500" },
   Interview: { badge: "bg-amber-100 text-amber-700", btn: "bg-amber-50 text-amber-600 hover:bg-amber-100", dot: "bg-amber-500" },
   Offer: { badge: "bg-emerald-100 text-emerald-700", btn: "bg-emerald-50 text-emerald-600 hover:bg-emerald-100", dot: "bg-emerald-500" },
-  Rejected: { badge: "bg-gray-100 text-heading", btn: "bg-gray-50 text-body hover:bg-brand-50", dot: "bg-gray-400" },
+  Rejected: { badge: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400", btn: "bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50", dot: "bg-red-500" },
 };
 
 const CHART_COLORS_LIGHT = ["#4f46e5", "#f59e0b", "#10b981", "#6b7280"];
@@ -514,10 +514,10 @@ function Dashboard() {
               <ThemeToggle />
               <button
                 onClick={() => setActiveTab("add")}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg shadow-sm shadow-brand-600/20 transition-colors"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg shadow-sm shadow-brand-600/20 transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                Add New
+                <span className="hidden sm:inline">Add New</span>
               </button>
             </div>
           </div>
