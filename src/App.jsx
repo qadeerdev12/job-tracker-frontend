@@ -159,6 +159,7 @@ function Sidebar({ activeTab, setActiveTab, handleLogout, initials, userName }) 
     { id: "archived", label: "Archived", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg> },
     { id: "activity", label: "Activity", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
     { id: "add", label: "Add New", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg> },
+    { id: "ai", label: "AI Tailor", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" /></svg> },
   ];
 
   return (
@@ -231,6 +232,187 @@ function ThemeToggle() {
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
       )}
     </button>
+  );
+}
+
+function AITailorTab({ authHeader }) {
+  const [jobDescription, setJobDescription] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [remaining, setRemaining] = useState(null);
+
+  const handleAnalyze = async () => {
+    if (jobDescription.trim().length < 20) {
+      setError("Please paste a job description (at least 20 characters)");
+      return;
+    }
+    setError("");
+    setLoading(true);
+    setResult(null);
+    try {
+      const res = await axios.post(`${API}/api/ai/tailor`, { jobDescription }, authHeader());
+      setResult(res.data.result);
+      setRemaining(res.data.remaining);
+    } catch (err) {
+      setError(err.response?.data?.message || "Analysis failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-card rounded-xl border border-line p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-brand-600 rounded-xl flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-heading">Paste a Job Description</h3>
+              <p className="text-xs text-muted">AI will analyze it and suggest how to tailor your resume</p>
+            </div>
+          </div>
+
+          <textarea
+            value={jobDescription}
+            onChange={(e) => setJobDescription(e.target.value)}
+            placeholder="Paste the full job description here..."
+            rows={8}
+            className={`${inputClass} resize-none mb-4`}
+          />
+
+          {error && (
+            <div className="bg-red-100 text-red-700 p-2 rounded-lg mb-4 text-sm">{error}</div>
+          )}
+
+          <div className="flex items-center justify-between">
+            <button
+              onClick={handleAnalyze}
+              disabled={loading || jobDescription.trim().length < 20}
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-500 to-brand-600 hover:from-purple-600 hover:to-brand-700 text-white text-sm font-medium rounded-lg shadow-sm transition-all disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+                  Analyze & Tailor
+                </>
+              )}
+            </button>
+            {remaining !== null && (
+              <span className="text-xs text-muted">{remaining} requests remaining today</span>
+            )}
+          </div>
+        </div>
+
+        {result && !result.raw && (
+          <div className="space-y-5">
+            {/* Role Summary */}
+            {result.role_summary && (
+              <div className="bg-card rounded-xl border border-line p-5">
+                <h4 className="text-sm font-semibold text-heading mb-2 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  Role Summary
+                </h4>
+                <p className="text-sm text-body">{result.role_summary}</p>
+              </div>
+            )}
+
+            {/* Keywords */}
+            {result.keywords && (
+              <div className="bg-card rounded-xl border border-line p-5">
+                <h4 className="text-sm font-semibold text-heading mb-3 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+                  Keywords to Include
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {result.keywords.map((kw, i) => (
+                    <span key={i} className="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full text-xs font-medium">{kw}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Skills */}
+            {result.skills_to_highlight && (
+              <div className="bg-card rounded-xl border border-line p-5">
+                <h4 className="text-sm font-semibold text-heading mb-3 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" /></svg>
+                  Skills to Highlight
+                </h4>
+                <ul className="space-y-2">
+                  {result.skills_to_highlight.map((skill, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-body">
+                      <svg className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      {skill}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Resume Tips */}
+            {result.resume_tips && (
+              <div className="bg-card rounded-xl border border-line p-5">
+                <h4 className="text-sm font-semibold text-heading mb-3 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" /></svg>
+                  Resume Tips
+                </h4>
+                <ul className="space-y-3">
+                  {result.resume_tips.map((tip, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-body">
+                      <span className="w-5 h-5 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">{i + 1}</span>
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Bullet Examples */}
+            {result.bullet_examples && (
+              <div className="bg-card rounded-xl border border-line p-5">
+                <h4 className="text-sm font-semibold text-heading mb-3 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                  Example Bullet Points
+                </h4>
+                <ul className="space-y-3">
+                  {result.bullet_examples.map((bullet, i) => (
+                    <li key={i} className="text-sm text-body bg-brand-50/50 dark:bg-brand-900/20 rounded-lg p-3 border-l-3 border-brand-500">
+                      {bullet}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Cover Letter Hook */}
+            {result.cover_letter_hook && (
+              <div className="bg-gradient-to-r from-purple-50 to-brand-50 dark:from-purple-900/20 dark:to-brand-900/20 rounded-xl border border-line p-5">
+                <h4 className="text-sm font-semibold text-heading mb-2 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                  Cover Letter Opening
+                </h4>
+                <p className="text-sm text-body italic">"{result.cover_letter_hook}"</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {result && result.raw && (
+          <div className="bg-card rounded-xl border border-line p-5">
+            <h4 className="text-sm font-semibold text-heading mb-2">AI Analysis</h4>
+            <p className="text-sm text-body whitespace-pre-wrap">{result.raw}</p>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -536,6 +718,7 @@ function Dashboard() {
                   {activeTab === "archived" && "Archived"}
                   {activeTab === "activity" && "Activity Log"}
                   {activeTab === "add" && "New Application"}
+                  {activeTab === "ai" && "AI Resume Tailor"}
                 </h1>
                 <p className="text-xs text-muted">
                   {activeTab === "dashboard" && `Welcome back, ${firstName}`}
@@ -543,6 +726,7 @@ function Dashboard() {
                   {activeTab === "archived" && `${archivedJobs.length} archived application${archivedJobs.length !== 1 ? "s" : ""}`}
                   {activeTab === "activity" && `${activities.length} recent action${activities.length !== 1 ? "s" : ""}`}
                   {activeTab === "add" && "Track a new job application"}
+                  {activeTab === "ai" && "Tailor your resume to any job description"}
                 </p>
               </div>
             </div>
@@ -1182,6 +1366,8 @@ function Dashboard() {
               )}
             </>
           )}
+          {/* ===== AI TAILOR TAB ===== */}
+          {activeTab === "ai" && <AITailorTab authHeader={authHeader} />}
         </main>
       </div>
 
