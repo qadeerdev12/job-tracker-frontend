@@ -330,13 +330,14 @@ function Dashboard() {
   };
 
   useEffect(() => {
+    if (!session) return;
     fetchJobs();
     fetchStats();
     fetchTags();
     fetchArchivedJobs();
     fetchActivities();
     fetchReminders();
-  }, []);
+  }, [session]);
 
   const createJob = async (e) => {
     e.preventDefault();
