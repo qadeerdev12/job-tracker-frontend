@@ -236,13 +236,20 @@ function ThemeToggle() {
 }
 
 function AITailorTab({ authHeader }) {
+  const [resumeText, setResumeText] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [remaining, setRemaining] = useState(null);
 
+  const canAnalyze = resumeText.trim().length >= 20 && jobDescription.trim().length >= 20;
+
   const handleAnalyze = async () => {
+    if (resumeText.trim().length < 20) {
+      setError("Please paste your resume (at least 20 characters)");
+      return;
+    }
     if (jobDescription.trim().length < 20) {
       setError("Please paste a job description (at least 20 characters)");
       return;
@@ -251,7 +258,7 @@ function AITailorTab({ authHeader }) {
     setLoading(true);
     setResult(null);
     try {
-      const res = await axios.post(`${API}/api/ai/tailor`, { jobDescription }, authHeader());
+      const res = await axios.post(`${API}/api/ai/tailor`, { jobDescription, resumeText }, authHeader());
       setResult(res.data.result);
       setRemaining(res.data.remaining);
     } catch (err) {
@@ -261,36 +268,65 @@ function AITailorTab({ authHeader }) {
     }
   };
 
+  const scoreColor = (score) => {
+    if (score >= 80) return "text-emerald-500";
+    if (score >= 60) return "text-amber-500";
+    return "text-red-500";
+  };
+
+  const scoreBg = (score) => {
+    if (score >= 80) return "from-emerald-500 to-emerald-400";
+    if (score >= 60) return "from-amber-500 to-amber-400";
+    return "from-red-500 to-red-400";
+  };
+
   return (
     <>
       <div className="max-w-4xl mx-auto">
         <div className="bg-card rounded-xl border border-line p-6 mb-6">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-brand-600 rounded-xl flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
             </div>
             <div>
-              <h3 className="text-base font-semibold text-heading">Paste a Job Description</h3>
-              <p className="text-xs text-muted">AI will analyze it and suggest how to tailor your resume</p>
+              <h3 className="text-base font-semibold text-heading">AI Resume Tailor</h3>
+              <p className="text-xs text-muted">Paste your resume and a job description to get a personalized gap analysis</p>
             </div>
           </div>
 
-          <textarea
-            value={jobDescription}
-            onChange={(e) => setJobDescription(e.target.value)}
-            placeholder="Paste the full job description here..."
-            rows={8}
-            className={`${inputClass} resize-none mb-4`}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-xs font-medium text-heading mb-1.5">Your Resume</label>
+              <textarea
+                value={resumeText}
+                onChange={(e) => setResumeText(e.target.value)}
+                placeholder="Paste your resume text here..."
+                rows={10}
+                className={`${inputClass} resize-none`}
+              />
+              <p className="text-xs text-muted mt-1">{resumeText.length}/8000</p>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-heading mb-1.5">Job Description</label>
+              <textarea
+                value={jobDescription}
+                onChange={(e) => setJobDescription(e.target.value)}
+                placeholder="Paste the job description here..."
+                rows={10}
+                className={`${inputClass} resize-none`}
+              />
+              <p className="text-xs text-muted mt-1">{jobDescription.length}/5000</p>
+            </div>
+          </div>
 
           {error && (
-            <div className="bg-red-100 text-red-700 p-2 rounded-lg mb-4 text-sm">{error}</div>
+            <div className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-2 rounded-lg mb-4 text-sm">{error}</div>
           )}
 
           <div className="flex items-center justify-between">
             <button
               onClick={handleAnalyze}
-              disabled={loading || jobDescription.trim().length < 20}
+              disabled={loading || !canAnalyze}
               className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-500 to-brand-600 hover:from-purple-600 hover:to-brand-700 text-white text-sm font-medium rounded-lg shadow-sm transition-all disabled:opacity-50"
             >
               {loading ? (
@@ -313,6 +349,22 @@ function AITailorTab({ authHeader }) {
 
         {result && !result.raw && (
           <div className="space-y-5">
+            {/* Match Score */}
+            {result.match_score != null && (
+              <div className="bg-card rounded-xl border border-line p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-heading flex items-center gap-2">
+                    <svg className="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
+                    Match Score
+                  </h4>
+                  <span className={`text-3xl font-bold ${scoreColor(result.match_score)}`}>{result.match_score}%</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                  <div className={`h-2.5 rounded-full bg-gradient-to-r ${scoreBg(result.match_score)}`} style={{ width: `${result.match_score}%` }} />
+                </div>
+              </div>
+            )}
+
             {/* Role Summary */}
             {result.role_summary && (
               <div className="bg-card rounded-xl border border-line p-5">
@@ -323,6 +375,43 @@ function AITailorTab({ authHeader }) {
                 <p className="text-sm text-body">{result.role_summary}</p>
               </div>
             )}
+
+            {/* Strengths & Gaps side by side */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {result.strengths && (
+                <div className="bg-card rounded-xl border border-line p-5">
+                  <h4 className="text-sm font-semibold text-heading mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Your Strengths
+                  </h4>
+                  <ul className="space-y-2">
+                    {result.strengths.map((s, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-body">
+                        <svg className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {result.gaps && (
+                <div className="bg-card rounded-xl border border-line p-5">
+                  <h4 className="text-sm font-semibold text-heading mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+                    Gaps to Address
+                  </h4>
+                  <ul className="space-y-2">
+                    {result.gaps.map((g, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-body">
+                        <svg className="w-4 h-4 text-red-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        {g}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
 
             {/* Keywords */}
             {result.keywords && (
@@ -336,24 +425,6 @@ function AITailorTab({ authHeader }) {
                     <span key={i} className="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full text-xs font-medium">{kw}</span>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Skills */}
-            {result.skills_to_highlight && (
-              <div className="bg-card rounded-xl border border-line p-5">
-                <h4 className="text-sm font-semibold text-heading mb-3 flex items-center gap-2">
-                  <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" /></svg>
-                  Skills to Highlight
-                </h4>
-                <ul className="space-y-2">
-                  {result.skills_to_highlight.map((skill, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-body">
-                      <svg className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                      {skill}
-                    </li>
-                  ))}
-                </ul>
               </div>
             )}
 
@@ -375,15 +446,16 @@ function AITailorTab({ authHeader }) {
               </div>
             )}
 
-            {/* Bullet Examples */}
-            {result.bullet_examples && (
+            {/* Bullet Rewrites */}
+            {result.bullet_rewrites && (
               <div className="bg-card rounded-xl border border-line p-5">
                 <h4 className="text-sm font-semibold text-heading mb-3 flex items-center gap-2">
-                  <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
-                  Example Bullet Points
+                  <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+                  Rewritten Bullet Points
                 </h4>
+                <p className="text-xs text-muted mb-3">Your experience reframed for this specific role</p>
                 <ul className="space-y-3">
-                  {result.bullet_examples.map((bullet, i) => (
+                  {result.bullet_rewrites.map((bullet, i) => (
                     <li key={i} className="text-sm text-body bg-brand-50/50 dark:bg-brand-900/20 rounded-lg p-3 border-l-3 border-brand-500">
                       {bullet}
                     </li>
