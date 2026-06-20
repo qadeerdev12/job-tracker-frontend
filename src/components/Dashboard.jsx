@@ -4,7 +4,6 @@ import { PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, Cart
 import { supabase } from "../lib/supabase";
 import { API, STATUS_STYLES, CHART_COLORS_LIGHT, CHART_COLORS_DARK, inputClass } from "../utils/constants";
 import { getTagColor, timeAgo, getWeeklyData } from "../utils/helpers";
-import Sidebar from "./Sidebar";
 import ThemeToggle from "./ThemeToggle";
 import TagInput from "./TagInput";
 import AITailorTab from "./AITailorTab";
@@ -24,8 +23,8 @@ export default function Dashboard() {
   const [filterTag, setFilterTag] = useState("All");
   const [sortBy, setSortBy] = useState("newest");
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [allTags, setAllTags] = useState([]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [archivedJobs, setArchivedJobs] = useState([]);
   const [activities, setActivities] = useState([]);
@@ -259,657 +258,627 @@ export default function Dashboard() {
     ];
   }, [totalApps, stats]);
 
-  const statCards = [
-    { label: "Total", count: totalApps, color: "brand", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg> },
-    { label: "Applied", count: stats.Applied, color: "brand", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg> },
-    { label: "Interview", count: stats.Interview, color: "amber", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg> },
-    { label: "Offer", count: stats.Offer, color: "emerald", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" /></svg> },
-    { label: "Rejected", count: stats.Rejected, color: "gray", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg> },
+  const navItems = [
+    { id: "dashboard", label: "Dashboard" },
+    { id: "applications", label: "Applications" },
+    { id: "archived", label: "Archived" },
+    { id: "activity", label: "Activity" },
+    { id: "ai", label: "AI Tailor" },
   ];
 
-  const colorMap = {
-    brand: { bg: "bg-brand-50", icon: "bg-brand-100 text-brand-600", text: "text-brand-600" },
-    amber: { bg: "bg-amber-50", icon: "bg-amber-100 text-amber-600", text: "text-amber-600" },
-    emerald: { bg: "bg-emerald-50", icon: "bg-emerald-100 text-emerald-600", text: "text-emerald-600" },
-    gray: { bg: "bg-gray-50", icon: "bg-gray-100 text-body", text: "text-body" },
-  };
+  const today = new Date();
+  const dateStr = today.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" });
+
+  const summaryStats = [
+    { label: "APPLIED", count: stats.Applied, color: "text-brand-400" },
+    { label: "INTERVIEW", count: stats.Interview, color: "text-amber-400" },
+    { label: "OFFER", count: stats.Offer, color: "text-emerald-400" },
+    { label: "REJECTED", count: stats.Rejected, color: "text-red-400" },
+    { label: "TOTAL", count: totalApps, color: "text-heading" },
+  ];
 
   return (
     <div className="min-h-screen bg-page">
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
-      )}
+      {/* Top Navbar */}
+      <nav className="sticky top-0 z-50 bg-topbar backdrop-blur-md border-b border-line">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20L17.5 6.5" stroke="currentColor" strokeWidth={2.5} /><path d="M17.5 6.5l2.5-2.5" stroke="currentColor" strokeWidth={1.5} /><circle cx="20" cy="4" r="1.5" fill="currentColor" /><path d="M4 20c0 0-1 -5 3-9" stroke="currentColor" strokeWidth={1.8} /><path d="M4 20c0 0 5 1 9-3" stroke="currentColor" strokeWidth={1.8} /></svg>
+                </div>
+                <span className="text-lg font-bold text-brand-400 tracking-tight">TailorTrack</span>
+              </div>
 
-      <div className={`fixed inset-y-0 left-0 w-64 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0 transition-transform duration-200 z-40`}>
-        <Sidebar
-          activeTab={activeTab}
-          setActiveTab={(tab) => { setActiveTab(tab); setSidebarOpen(false); }}
-          handleLogout={handleLogout}
-          initials={initials}
-          userName={userName}
-        />
-      </div>
+              <div className="hidden md:flex items-center gap-1">
+                {navItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      activeTab === item.id
+                        ? "bg-brand-600/10 text-brand-400"
+                        : "text-muted hover:text-heading hover:bg-card"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-      <div className="lg:ml-64">
-        <header className="sticky top-0 z-20 bg-topbar backdrop-blur-md border-b border-line">
-          <div className="flex items-center justify-between px-6 lg:px-8 h-16">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 text-body hover:text-heading hover:bg-brand-50 rounded-lg"
+                onClick={() => setActiveTab("add")}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                <span className="hidden sm:inline">Add</span>
+              </button>
+              <ThemeToggle />
+              <div className="flex items-center gap-2 ml-1">
+                <div className="w-8 h-8 bg-gradient-to-br from-brand-400 to-brand-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                  {initials}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="text-xs text-muted hover:text-red-400 transition-colors hidden sm:block"
+                >
+                  Sign Out
+                </button>
+              </div>
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-1.5 text-muted hover:text-heading rounded-lg"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
               </button>
-              <div>
-                <h1 className="text-lg font-semibold text-heading">
-                  {activeTab === "dashboard" && "Dashboard"}
-                  {activeTab === "applications" && "Applications"}
-                  {activeTab === "archived" && "Archived"}
-                  {activeTab === "activity" && "Activity Log"}
-                  {activeTab === "add" && "New Application"}
-                  {activeTab === "ai" && "AI Resume Tailor"}
-                </h1>
-                <p className="text-xs text-muted">
-                  {activeTab === "dashboard" && `Welcome back, ${firstName}`}
-                  {activeTab === "applications" && `${filteredJobs.length} of ${jobs.length} shown`}
-                  {activeTab === "archived" && `${archivedJobs.length} archived application${archivedJobs.length !== 1 ? "s" : ""}`}
-                  {activeTab === "activity" && `${activities.length} recent action${activities.length !== 1 ? "s" : ""}`}
-                  {activeTab === "add" && "Track a new job application"}
-                  {activeTab === "ai" && "Tailor your resume to any job description"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <ThemeToggle />
-              <button
-                onClick={() => setActiveTab("add")}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg shadow-sm shadow-brand-600/20 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                <span className="hidden sm:inline">Add New</span>
-              </button>
             </div>
           </div>
-        </header>
 
-        <main className="p-6 lg:p-8">
+          {mobileMenuOpen && (
+            <div className="md:hidden pb-3 border-t border-line mt-1 pt-2 flex flex-wrap gap-1">
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => { setActiveTab(item.id); setMobileMenuOpen(false); }}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === item.id
+                      ? "bg-brand-600/10 text-brand-400"
+                      : "text-muted hover:text-heading"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+              <button
+                onClick={handleLogout}
+                className="sm:hidden px-3 py-2 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
+        </div>
+      </nav>
 
-          {activeTab === "dashboard" && (
-            <>
-              <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-                {statCards.map((card) => {
-                  const c = colorMap[card.color];
-                  return (
-                    <div key={card.label} className="bg-card rounded-xl border border-line p-5 hover:shadow-md transition-shadow">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-xs font-medium text-body uppercase tracking-wider">{card.label}</span>
-                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${c.icon}`}>
-                          {card.icon}
+      {/* Summary Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-2">
+        <div className="bg-card rounded-2xl border border-line p-6 sm:p-8">
+          <p className="text-sm text-muted mb-1">{dateStr}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-heading mb-6">{firstName}'s Summary</h1>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            {summaryStats.map((stat) => (
+              <div key={stat.label} className="bg-page rounded-xl p-4 border border-line">
+                <p className="text-[11px] font-semibold text-muted tracking-wider mb-1">{stat.label}</p>
+                <p className={`text-2xl sm:text-3xl font-bold ${stat.color}`}>{stat.count}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+
+        {activeTab === "dashboard" && (
+          <div className="space-y-6">
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-card rounded-2xl border border-line p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-heading">Status Breakdown</h3>
+                  <span className="text-xs text-muted">{totalApps} total</span>
+                </div>
+                <div className="flex justify-center">
+                  <PieChart width={280} height={240}>
+                    <Pie data={chartData} dataKey="value" cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3}>
+                      {chartData.map((entry, index) => (
+                        <Cell key={index} fill={chartColors[index]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid var(--color-line-strong)", fontSize: "13px", backgroundColor: "var(--color-card)", color: "var(--color-heading)" }} />
+                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "13px" }} />
+                  </PieChart>
+                </div>
+              </div>
+
+              <div className="bg-card rounded-2xl border border-line p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-heading">Weekly Activity</h3>
+                  <span className="text-xs text-muted">Last 6 weeks</span>
+                </div>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={weeklyData} barSize={32}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line-strong)" vertical={false} />
+                    <XAxis dataKey="week" tick={{ fontSize: 12, fill: "var(--color-muted)" }} axisLine={false} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "var(--color-muted)" }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid var(--color-line-strong)", fontSize: "13px", backgroundColor: "var(--color-card)", color: "var(--color-heading)" }} />
+                    <Bar dataKey="count" fill={isDark ? "#3b82f6" : "#4f46e5"} radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Analytics Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-card rounded-2xl border border-line p-5">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted">Response Rate</p>
+                    <p className="text-2xl font-bold text-heading">{responseRate}%</p>
+                  </div>
+                </div>
+                <div className="w-full bg-line-strong rounded-full h-1.5 mt-2">
+                  <div className="bg-blue-500 h-1.5 rounded-full transition-all" style={{ width: `${responseRate}%` }} />
+                </div>
+              </div>
+
+              <div className="bg-card rounded-2xl border border-line p-5">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M18.75 4.236c.982.143 1.954.317 2.916.52A6.003 6.003 0 0016.27 9.728M18.75 4.236V4.5c0 2.108-.966 3.99-2.48 5.228m0 0a6.023 6.023 0 01-2.27.308 6.023 6.023 0 01-2.27-.308" /></svg>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted">Success Rate</p>
+                    <p className="text-2xl font-bold text-heading">{successRate}%</p>
+                  </div>
+                </div>
+                <div className="w-full bg-line-strong rounded-full h-1.5 mt-2">
+                  <div className="bg-emerald-500 h-1.5 rounded-full transition-all" style={{ width: `${successRate}%` }} />
+                </div>
+              </div>
+
+              <div className="bg-card rounded-2xl border border-line p-5">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted">Avg. Time to Interview</p>
+                    <p className="text-2xl font-bold text-heading">{avgDaysToInterview !== null ? `${avgDaysToInterview}d` : "—"}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Monthly + Funnel Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-card rounded-2xl border border-line p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-heading">Monthly Trend</h3>
+                  <span className="text-xs text-muted">Last 6 months</span>
+                </div>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={monthlyData} barSize={28}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line-strong)" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 12, fill: "var(--color-muted)" }} axisLine={false} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "var(--color-muted)" }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid var(--color-line-strong)", fontSize: "13px", backgroundColor: "var(--color-card)", color: "var(--color-heading)" }} />
+                    <Bar dataKey="count" fill={isDark ? "#60a5fa" : "#6366f1"} radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="bg-card rounded-2xl border border-line p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-heading">Application Funnel</h3>
+                  <span className="text-xs text-muted">Conversion rates</span>
+                </div>
+                <div className="space-y-4 mt-6">
+                  {funnelData.map((item, i) => {
+                    const colors = ["bg-brand-500", "bg-amber-500", "bg-emerald-500"];
+                    const bgColors = ["bg-brand-100 dark:bg-brand-900/30", "bg-amber-100 dark:bg-amber-900/30", "bg-emerald-100 dark:bg-emerald-900/30"];
+                    return (
+                      <div key={item.stage}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-sm font-medium text-heading">{item.stage}</span>
+                          <span className="text-sm text-muted">{item.count} <span className="text-xs">({item.pct}%)</span></span>
+                        </div>
+                        <div className={`w-full rounded-full h-2.5 ${bgColors[i]}`}>
+                          <div className={`${colors[i]} h-2.5 rounded-full transition-all duration-500`} style={{ width: `${item.pct}%`, minWidth: item.count > 0 ? "8px" : "0" }} />
                         </div>
                       </div>
-                      <p className={`text-3xl font-bold ${c.text}`}>{card.count}</p>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <div className="bg-card rounded-xl border border-line p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-heading">Status Breakdown</h3>
-                    <span className="text-xs text-muted">{totalApps} total</span>
-                  </div>
-                  <div className="flex justify-center">
-                    <PieChart width={280} height={240}>
-                      <Pie data={chartData} dataKey="value" cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3}>
-                        {chartData.map((entry, index) => (
-                          <Cell key={index} fill={chartColors[index]} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={{ borderRadius: "8px", border: "1px solid var(--color-line-strong)", fontSize: "13px", backgroundColor: "var(--color-card)", color: "var(--color-heading)" }} />
-                      <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "13px" }} />
-                    </PieChart>
-                  </div>
-                </div>
-
-                <div className="bg-card rounded-xl border border-line p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-heading">Weekly Activity</h3>
-                    <span className="text-xs text-muted">Last 6 weeks</span>
-                  </div>
-                  <ResponsiveContainer width="100%" height={240}>
-                    <BarChart data={weeklyData} barSize={32}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line-strong)" vertical={false} />
-                      <XAxis dataKey="week" tick={{ fontSize: 12, fill: "var(--color-muted)" }} axisLine={false} tickLine={false} />
-                      <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "var(--color-muted)" }} axisLine={false} tickLine={false} />
-                      <Tooltip contentStyle={{ borderRadius: "8px", border: "1px solid var(--color-line-strong)", fontSize: "13px", backgroundColor: "var(--color-card)", color: "var(--color-heading)" }} />
-                      <Bar dataKey="count" fill={isDark ? "#3b82f6" : "#4f46e5"} radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                    );
+                  })}
                 </div>
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                <div className="bg-card rounded-xl border border-line p-5">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted">Response Rate</p>
-                      <p className="text-2xl font-bold text-heading">{responseRate}%</p>
-                    </div>
-                  </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
-                    <div className="bg-blue-500 h-2 rounded-full transition-all" style={{ width: `${responseRate}%` }} />
-                  </div>
-                  <p className="text-xs text-muted mt-2">Applications that got a response</p>
-                </div>
-
-                <div className="bg-card rounded-xl border border-line p-5">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M18.75 4.236c.982.143 1.954.317 2.916.52A6.003 6.003 0 0016.27 9.728M18.75 4.236V4.5c0 2.108-.966 3.99-2.48 5.228m0 0a6.023 6.023 0 01-2.27.308 6.023 6.023 0 01-2.27-.308" /></svg>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted">Success Rate</p>
-                      <p className="text-2xl font-bold text-heading">{successRate}%</p>
-                    </div>
-                  </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
-                    <div className="bg-emerald-500 h-2 rounded-full transition-all" style={{ width: `${successRate}%` }} />
-                  </div>
-                  <p className="text-xs text-muted mt-2">Applications that reached Offer</p>
-                </div>
-
-                <div className="bg-card rounded-xl border border-line p-5">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-9 h-9 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted">Avg. Time to Interview</p>
-                      <p className="text-2xl font-bold text-heading">{avgDaysToInterview !== null ? `${avgDaysToInterview}d` : "—"}</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted mt-4">Average days from application to interview</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <div className="bg-card rounded-xl border border-line p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-heading">Monthly Trend</h3>
-                    <span className="text-xs text-muted">Last 6 months</span>
-                  </div>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={monthlyData} barSize={28}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line-strong)" vertical={false} />
-                      <XAxis dataKey="month" tick={{ fontSize: 12, fill: "var(--color-muted)" }} axisLine={false} tickLine={false} />
-                      <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "var(--color-muted)" }} axisLine={false} tickLine={false} />
-                      <Tooltip contentStyle={{ borderRadius: "8px", border: "1px solid var(--color-line-strong)", fontSize: "13px", backgroundColor: "var(--color-card)", color: "var(--color-heading)" }} />
-                      <Bar dataKey="count" fill={isDark ? "#60a5fa" : "#6366f1"} radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-
-                <div className="bg-card rounded-xl border border-line p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-heading">Application Funnel</h3>
-                    <span className="text-xs text-muted">Conversion rates</span>
-                  </div>
-                  <div className="space-y-4 mt-6">
-                    {funnelData.map((item, i) => {
-                      const colors = ["bg-brand-500", "bg-amber-500", "bg-emerald-500"];
-                      const bgColors = ["bg-brand-100 dark:bg-brand-900/30", "bg-amber-100 dark:bg-amber-900/30", "bg-emerald-100 dark:bg-emerald-900/30"];
-                      return (
-                        <div key={item.stage}>
-                          <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-sm font-medium text-heading">{item.stage}</span>
-                            <span className="text-sm text-muted">{item.count} <span className="text-xs">({item.pct}%)</span></span>
-                          </div>
-                          <div className={`w-full rounded-full h-3 ${bgColors[i]}`}>
-                            <div className={`${colors[i]} h-3 rounded-full transition-all duration-500`} style={{ width: `${item.pct}%`, minWidth: item.count > 0 ? "8px" : "0" }} />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {totalApps > 0 && (
-                    <p className="text-xs text-muted mt-5 text-center">
-                      {responseRate > 30 ? "Great response rate! Keep it up." : responseRate > 15 ? "Solid progress — keep applying!" : "Tip: Tailor each application to boost response rates."}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {reminders.length > 0 && (
-                <div className="bg-card rounded-xl border border-line p-6 mb-8">
-                  <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-sm font-semibold text-heading flex items-center gap-2">
-                      <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
-                      Follow-Up Reminders
-                    </h3>
-                    <span className="text-xs text-muted">{reminders.length} pending</span>
-                  </div>
-                  <div className="divide-y divide-line">
-                    {reminders.slice(0, 5).map((job) => {
-                      const today = new Date(); today.setHours(0,0,0,0);
-                      const fDate = new Date(job.followUpDate); fDate.setHours(0,0,0,0);
-                      const diffDays = Math.ceil((fDate - today) / 86400000);
-                      const isOverdue = diffDays < 0;
-                      const isToday = diffDays === 0;
-                      return (
-                        <div key={job._id} className="flex items-center gap-4 py-3.5 first:pt-0 last:pb-0">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
-                            isOverdue ? "bg-red-100 text-red-600" : isToday ? "bg-amber-100 text-amber-600" : "bg-blue-100 text-blue-600"
-                          }`}>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-heading truncate">{job.company}</p>
-                            <p className="text-xs text-muted truncate">{job.role}</p>
-                          </div>
-                          <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                            isOverdue ? "bg-red-100 text-red-700" : isToday ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"
-                          }`}>
-                            {isOverdue ? `Overdue ${Math.abs(diffDays)}d` : isToday ? "Due today" : `In ${diffDays}d`}
-                          </span>
-                          <span className="text-xs text-muted shrink-0">
-                            {new Date(job.followUpDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              <div className="bg-card rounded-xl border border-line p-6">
+            {/* Reminders */}
+            {reminders.length > 0 && (
+              <div className="bg-card rounded-2xl border border-line p-6">
                 <div className="flex items-center justify-between mb-5">
-                  <h3 className="text-sm font-semibold text-heading">Recent Activity</h3>
-                  <button onClick={() => setActiveTab("applications")} className="text-xs text-brand-600 hover:text-brand-700 font-medium">View all</button>
+                  <h3 className="text-sm font-semibold text-heading flex items-center gap-2">
+                    <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+                    Follow-Up Reminders
+                  </h3>
+                  <span className="text-xs text-muted">{reminders.length} pending</span>
                 </div>
-                {recentActivity.length === 0 ? (
-                  <p className="text-muted text-sm text-center py-8">No applications yet — add your first one!</p>
-                ) : (
-                  <div className="divide-y divide-line">
-                    {recentActivity.map((job) => (
+                <div className="divide-y divide-line">
+                  {reminders.slice(0, 5).map((job) => {
+                    const td = new Date(); td.setHours(0,0,0,0);
+                    const fDate = new Date(job.followUpDate); fDate.setHours(0,0,0,0);
+                    const diffDays = Math.ceil((fDate - td) / 86400000);
+                    const isOverdue = diffDays < 0;
+                    const isToday = diffDays === 0;
+                    return (
                       <div key={job._id} className="flex items-center gap-4 py-3.5 first:pt-0 last:pb-0">
-                        <div className={`w-2 h-2 rounded-full shrink-0 ${STATUS_STYLES[job.status]?.dot || "bg-gray-400"}`} />
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
+                          isOverdue ? "bg-red-500/10 text-red-400" : isToday ? "bg-amber-500/10 text-amber-400" : "bg-blue-500/10 text-blue-400"
+                        }`}>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+                        </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-medium text-heading truncate">{job.company}</p>
                           <p className="text-xs text-muted truncate">{job.role}</p>
                         </div>
-                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-body"}`}>
-                          {job.status}
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                          isOverdue ? "bg-red-500/10 text-red-400" : isToday ? "bg-amber-500/10 text-amber-400" : "bg-blue-500/10 text-blue-400"
+                        }`}>
+                          {isOverdue ? `Overdue ${Math.abs(diffDays)}d` : isToday ? "Due today" : `In ${diffDays}d`}
                         </span>
-                        <span className="text-xs text-muted shrink-0 w-20 text-right">
-                          {timeAgo(job.updatedAt || job.createdAt)}
+                        <span className="text-xs text-muted shrink-0">
+                          {new Date(job.followUpDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </span>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-
-          {activeTab === "activity" && (
-            <>
-              {activities.length === 0 ? (
-                <div className="bg-card rounded-xl border border-line p-12 text-center">
-                  <svg className="w-12 h-12 text-faint mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <p className="text-body font-medium">No activity yet</p>
-                  <p className="text-sm text-muted mt-1">Actions like adding, updating, and archiving jobs will appear here.</p>
+                    );
+                  })}
                 </div>
+              </div>
+            )}
+
+            {/* Recent Activity */}
+            <div className="bg-card rounded-2xl border border-line p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-sm font-semibold text-heading">Recent Activity</h3>
+                <button onClick={() => setActiveTab("applications")} className="text-xs text-brand-400 hover:text-brand-300 font-medium">View all</button>
+              </div>
+              {recentActivity.length === 0 ? (
+                <p className="text-muted text-sm text-center py-8">No applications yet — add your first one!</p>
               ) : (
-                <div className="bg-card rounded-xl border border-line p-6">
-                  <div className="divide-y divide-line">
-                    {activities.map((act) => {
-                      const icons = {
-                        created: { bg: "bg-emerald-100", color: "text-emerald-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg> },
-                        status_change: { bg: "bg-blue-100", color: "text-blue-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg> },
-                        archived: { bg: "bg-orange-100", color: "text-orange-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg> },
-                        restored: { bg: "bg-brand-100", color: "text-brand-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg> },
-                        deleted: { bg: "bg-red-100", color: "text-red-600", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg> },
-                        edited: { bg: "bg-gray-100", color: "text-body", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg> },
-                      };
-                      const labels = {
-                        created: "Added",
-                        status_change: "Status changed",
-                        archived: "Archived",
-                        restored: "Restored",
-                        deleted: "Deleted",
-                        edited: "Edited",
-                      };
-                      const style = icons[act.action] || icons.edited;
-                      return (
-                        <div key={act._id} className="flex items-center gap-3 py-3.5 first:pt-0 last:pb-0">
-                          <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${style.bg} ${style.color}`}>
-                            {style.icon}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm text-heading">
-                              <span className="font-medium">{labels[act.action]}</span>
-                              {" "}
-                              <span className="text-body">{act.company} — {act.role}</span>
-                            </p>
-                            {act.details && <p className="text-xs text-muted">{act.details}</p>}
-                          </div>
-                          <span className="text-xs text-muted shrink-0">{timeAgo(act.createdAt)}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                <div className="divide-y divide-line">
+                  {recentActivity.map((job) => (
+                    <div key={job._id} className="flex items-center gap-4 py-3.5 first:pt-0 last:pb-0">
+                      <div className={`w-2 h-2 rounded-full shrink-0 ${STATUS_STYLES[job.status]?.dot || "bg-gray-400"}`} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-heading truncate">{job.company}</p>
+                        <p className="text-xs text-muted truncate">{job.role}</p>
+                      </div>
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-body"}`}>
+                        {job.status}
+                      </span>
+                      <span className="text-xs text-muted shrink-0 w-20 text-right">
+                        {timeAgo(job.updatedAt || job.createdAt)}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               )}
-            </>
-          )}
+            </div>
+          </div>
+        )}
 
-          {activeTab === "add" && (
-            <div className="max-w-xl mx-auto">
-              <div className="bg-card rounded-xl border border-line p-8">
-                <div className="mb-6">
-                  <h2 className="text-lg font-semibold text-heading">Track New Application</h2>
-                  <p className="text-sm text-muted mt-1">Fill in the details below to add a job to your tracker.</p>
+        {activeTab === "activity" && (
+          <>
+            {activities.length === 0 ? (
+              <div className="bg-card rounded-2xl border border-line p-12 text-center">
+                <svg className="w-12 h-12 text-faint mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <p className="text-body font-medium">No activity yet</p>
+                <p className="text-sm text-muted mt-1">Actions like adding, updating, and archiving jobs will appear here.</p>
+              </div>
+            ) : (
+              <div className="bg-card rounded-2xl border border-line p-6">
+                <div className="divide-y divide-line">
+                  {activities.map((act) => {
+                    const icons = {
+                      created: { bg: "bg-emerald-500/10", color: "text-emerald-400", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg> },
+                      status_change: { bg: "bg-blue-500/10", color: "text-blue-400", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg> },
+                      archived: { bg: "bg-orange-500/10", color: "text-orange-400", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg> },
+                      restored: { bg: "bg-brand-500/10", color: "text-brand-400", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg> },
+                      deleted: { bg: "bg-red-500/10", color: "text-red-400", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg> },
+                      edited: { bg: "bg-gray-500/10", color: "text-body", icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg> },
+                    };
+                    const labels = { created: "Added", status_change: "Status changed", archived: "Archived", restored: "Restored", deleted: "Deleted", edited: "Edited" };
+                    const style = icons[act.action] || icons.edited;
+                    return (
+                      <div key={act._id} className="flex items-center gap-3 py-3.5 first:pt-0 last:pb-0">
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${style.bg} ${style.color}`}>
+                          {style.icon}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm text-heading">
+                            <span className="font-medium">{labels[act.action]}</span>{" "}
+                            <span className="text-body">{act.company} — {act.role}</span>
+                          </p>
+                          {act.details && <p className="text-xs text-muted">{act.details}</p>}
+                        </div>
+                        <span className="text-xs text-muted shrink-0">{timeAgo(act.createdAt)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === "add" && (
+          <div className="max-w-xl mx-auto">
+            <div className="bg-card rounded-2xl border border-line p-8">
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold text-heading">Track New Application</h2>
+                <p className="text-sm text-muted mt-1">Fill in the details below to add a job to your tracker.</p>
+              </div>
+
+              <form onSubmit={createJob} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-body mb-1.5">Company *</label>
+                    <input type="text" placeholder="e.g. Google" value={company} onChange={(e) => setCompany(e.target.value)} required className={inputClass} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-body mb-1.5">Role *</label>
+                    <input type="text" placeholder="e.g. Frontend Engineer" value={role} onChange={(e) => setRole(e.target.value)} required className={inputClass} />
+                  </div>
                 </div>
 
-                <form onSubmit={createJob} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-medium text-body mb-1.5">Company *</label>
-                      <input type="text" placeholder="e.g. Google" value={company} onChange={(e) => setCompany(e.target.value)} required className={inputClass} />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-body mb-1.5">Role *</label>
-                      <input type="text" placeholder="e.g. Frontend Engineer" value={role} onChange={(e) => setRole(e.target.value)} required className={inputClass} />
-                    </div>
-                  </div>
+                <div>
+                  <label className="block text-xs font-medium text-body mb-1.5">Job Posting URL</label>
+                  <input type="url" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} className={inputClass} />
+                </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-body mb-1.5">Job Posting URL</label>
-                    <input type="url" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} className={inputClass} />
-                  </div>
+                <div>
+                  <label className="block text-xs font-medium text-body mb-1.5">Notes</label>
+                  <textarea placeholder="Anything to remember about this application..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className={`${inputClass} resize-none`} />
+                </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-body mb-1.5">Notes</label>
-                    <textarea placeholder="Anything to remember about this application..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className={`${inputClass} resize-none`} />
-                  </div>
+                <div>
+                  <label className="block text-xs font-medium text-body mb-1.5">Tags</label>
+                  <TagInput tags={formTags} setTags={setFormTags} allTags={allTags} />
+                </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-body mb-1.5">Tags</label>
-                    <TagInput tags={formTags} setTags={setFormTags} allTags={allTags} />
-                  </div>
+                <div>
+                  <label className="block text-xs font-medium text-body mb-1.5">Follow-Up Date</label>
+                  <input type="date" value={followUpDate} onChange={(e) => setFollowUpDate(e.target.value)} className={inputClass} />
+                </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-body mb-1.5">Follow-Up Date</label>
-                    <input type="date" value={followUpDate} onChange={(e) => setFollowUpDate(e.target.value)} className={inputClass} />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-body mb-1.5">Status</label>
-                    <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputClass}>
-                      <option value="Applied">Applied</option>
-                      <option value="Interview">Interview</option>
-                      <option value="Offer">Offer</option>
-                      <option value="Rejected">Rejected</option>
-                    </select>
-                  </div>
-
-                  <button className="w-full bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-lg text-sm font-medium shadow-sm shadow-brand-600/20 transition-colors mt-2">
-                    Add Application
-                  </button>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "applications" && (
-            <>
-              <div className="bg-card rounded-xl border border-line p-4 mb-6">
-                <div className="flex flex-wrap gap-3">
-                  <div className="relative flex-1 min-w-[200px]">
-                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                    <input
-                      type="text"
-                      placeholder="Search by company or role..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 border border-line-strong bg-input-bg rounded-lg text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 focus:bg-card outline-none transition-all"
-                    />
-                  </div>
-                  <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className={`${inputClass} w-auto min-w-[140px]`}>
-                    <option value="All">All Statuses</option>
+                <div>
+                  <label className="block text-xs font-medium text-body mb-1.5">Status</label>
+                  <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputClass}>
                     <option value="Applied">Applied</option>
                     <option value="Interview">Interview</option>
                     <option value="Offer">Offer</option>
                     <option value="Rejected">Rejected</option>
                   </select>
-                  {allTags.length > 0 && (
-                    <select value={filterTag} onChange={(e) => setFilterTag(e.target.value)} className={`${inputClass} w-auto min-w-[130px]`}>
-                      <option value="All">All Tags</option>
-                      {allTags.map((tag) => (
-                        <option key={tag} value={tag}>{tag}</option>
-                      ))}
-                    </select>
-                  )}
-                  <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className={`${inputClass} w-auto min-w-[140px]`}>
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                    <option value="company">Company A-Z</option>
-                    <option value="status">By Status</option>
+                </div>
+
+                <button className="w-full bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-lg text-sm font-medium shadow-sm shadow-brand-600/20 transition-colors mt-2">
+                  Add Application
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "applications" && (
+          <>
+            <div className="bg-card rounded-2xl border border-line p-4 mb-6">
+              <div className="flex flex-wrap gap-3">
+                <div className="relative flex-1 min-w-[200px]">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                  <input
+                    type="text"
+                    placeholder="Search company, role..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 border border-line-strong bg-input-bg rounded-lg text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 focus:bg-card outline-none transition-all"
+                  />
+                </div>
+                <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className={`${inputClass} w-auto min-w-[130px]`}>
+                  <option value="All">All Statuses</option>
+                  <option value="Applied">Applied</option>
+                  <option value="Interview">Interview</option>
+                  <option value="Offer">Offer</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+                {allTags.length > 0 && (
+                  <select value={filterTag} onChange={(e) => setFilterTag(e.target.value)} className={`${inputClass} w-auto min-w-[120px]`}>
+                    <option value="All">All Tags</option>
+                    {allTags.map((tag) => (
+                      <option key={tag} value={tag}>{tag}</option>
+                    ))}
                   </select>
-                  <button
-                    onClick={async () => {
-                      try {
-                        const res = await axios.get(`${API}/api/jobs/export`, { ...authHeader(), responseType: "blob" });
-                        const url = window.URL.createObjectURL(new Blob([res.data]));
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = "tailortrack-export.csv";
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                      } catch (error) {
-                        console.log(error.response?.data || error.message);
-                      }
-                    }}
-                    className="flex items-center gap-1.5 px-3 py-2.5 border border-line-strong bg-input-bg rounded-lg text-sm text-body hover:bg-brand-50 hover:text-heading transition-all shrink-0"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                    Export
-                  </button>
+                )}
+                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className={`${inputClass} w-auto min-w-[130px]`}>
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="company">Company A-Z</option>
+                  <option value="status">By Status</option>
+                </select>
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await axios.get(`${API}/api/jobs/export`, { ...authHeader(), responseType: "blob" });
+                      const url = window.URL.createObjectURL(new Blob([res.data]));
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = "tailortrack-export.csv";
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                    } catch (error) {
+                      console.log(error.response?.data || error.message);
+                    }
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-2.5 border border-line-strong bg-input-bg rounded-lg text-sm text-body hover:text-heading transition-all shrink-0"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                  Export
+                </button>
+              </div>
+            </div>
+
+            {filteredJobs.length === 0 ? (
+              <div className="bg-card rounded-2xl border border-line p-12 text-center">
+                <svg className="w-12 h-12 text-faint mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                <p className="text-body font-medium">No applications found</p>
+                <p className="text-sm text-muted mt-1">Try adjusting your filters or add a new application.</p>
+                <button onClick={() => setActiveTab("add")} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition-colors">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                  Add Application
+                </button>
+              </div>
+            ) : (
+              <div className="bg-card rounded-2xl border border-line overflow-hidden">
+                <div className="grid grid-cols-[1fr_auto_auto_auto] sm:grid-cols-[1fr_120px_100px_80px] gap-4 px-5 py-3 border-b border-line text-[11px] font-semibold text-muted uppercase tracking-wider">
+                  <span>Role</span>
+                  <span className="hidden sm:block">Status</span>
+                  <span className="hidden sm:block">Applied</span>
+                  <span className="text-right">Action</span>
+                </div>
+                <div className="divide-y divide-line">
+                  {filteredJobs.map((job) => (
+                    <div key={job._id} className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_120px_100px_80px] gap-4 px-5 py-4 items-center hover:bg-page/50 transition-colors group">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-heading truncate">
+                          {job.company} <span className="font-normal text-muted">·</span> <span className="font-normal text-body">{job.role}</span>
+                        </p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          {job.tags && job.tags.map((tag) => (
+                            <span key={tag} className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${getTagColor(tag)}`}>{tag}</span>
+                          ))}
+                          {job.notes && (
+                            <span className="text-[11px] text-muted truncate max-w-[200px]">{job.notes.length > 30 ? job.notes.slice(0, 30) + "..." : job.notes}</span>
+                          )}
+                          <span className="sm:hidden">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-body"}`}>{job.status}</span>
+                          </span>
+                        </div>
+                        {/* Mobile action buttons */}
+                        <div className="flex gap-1.5 mt-2 sm:hidden flex-wrap">
+                          <button onClick={() => setEditJob({ ...job })} className="px-2 py-1 rounded text-[10px] font-medium bg-brand-50 text-body hover:bg-brand-100 dark:bg-brand-900/20 dark:hover:bg-brand-900/40 transition-colors">Edit</button>
+                          <button onClick={() => archiveJob(job._id, true)} className="px-2 py-1 rounded text-[10px] font-medium bg-orange-50 text-orange-600 hover:bg-orange-100 dark:bg-orange-900/20 dark:text-orange-400 transition-colors">Archive</button>
+                          <button onClick={() => setDeleteTarget(job)} className="px-2 py-1 rounded text-[10px] font-medium bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 transition-colors">Delete</button>
+                          {["Applied", "Interview", "Offer", "Rejected"]
+                            .filter((s) => s !== job.status)
+                            .map((s) => (
+                              <button key={s} onClick={() => updateJob(job._id, { status: s })} className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${STATUS_STYLES[s].btn}`}>{s}</button>
+                            ))}
+                        </div>
+                      </div>
+                      <span className={`hidden sm:inline-block text-xs px-2.5 py-1 rounded-full font-medium w-fit ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-body"}`}>
+                        {job.status}
+                      </span>
+                      <span className="hidden sm:block text-xs text-muted">
+                        {job.createdAt ? new Date(job.createdAt).toLocaleDateString("en-US", { day: "numeric", month: "short" }) : "—"}
+                      </span>
+                      <div className="hidden sm:flex gap-1 justify-end">
+                        <button onClick={() => setEditJob({ ...job })} className="p-1.5 rounded-lg text-muted hover:text-brand-400 hover:bg-brand-500/10 opacity-0 group-hover:opacity-100 transition-all" title="Edit">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+                        </button>
+                        <button onClick={() => archiveJob(job._id, true)} className="p-1.5 rounded-lg text-muted hover:text-orange-400 hover:bg-orange-500/10 opacity-0 group-hover:opacity-100 transition-all" title="Archive">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
+                        </button>
+                        <button onClick={() => setDeleteTarget(job)} className="p-1.5 rounded-lg text-muted hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all" title="Delete">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="px-5 py-3 border-t border-line flex items-center justify-between">
+                  <span className="text-xs text-muted">{filteredJobs.length} of {jobs.length} applications</span>
+                  <div className="flex gap-1">
+                    {["Applied", "Interview", "Offer", "Rejected"].map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => setFilterStatus(filterStatus === s ? "All" : s)}
+                        className={`text-[10px] px-2 py-1 rounded-full font-medium transition-colors ${
+                          filterStatus === s ? STATUS_STYLES[s]?.badge : "text-muted hover:text-heading"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
+            )}
+          </>
+        )}
 
-              {filteredJobs.length === 0 ? (
-                <div className="bg-card rounded-xl border border-line p-12 text-center">
-                  <svg className="w-12 h-12 text-faint mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                  <p className="text-body font-medium">No applications found</p>
-                  <p className="text-sm text-muted mt-1">Try adjusting your filters or add a new application.</p>
-                  <button onClick={() => setActiveTab("add")} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition-colors">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                    Add Application
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {filteredJobs.map((job) => (
-                    <div key={job._id} className="bg-card rounded-xl border border-line p-5 hover:border-brand-200 hover:shadow-sm transition-all group">
-                      <div className="flex items-start gap-4">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${
-                          job.status === "Applied" ? "bg-brand-100 text-brand-700" :
-                          job.status === "Interview" ? "bg-amber-100 text-amber-700" :
-                          job.status === "Offer" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-body"
-                        }`}>
-                          {job.company.charAt(0).toUpperCase()}
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <h3 className="text-sm font-semibold text-heading">{job.company}</h3>
-                              <p className="text-sm text-body">{job.role}</p>
-                            </div>
-                            <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-heading"}`}>
-                              {job.status}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-3 mt-2 text-xs text-muted">
-                            {job.link && (
-                              <a href={job.link} target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:text-brand-700 inline-flex items-center gap-1">
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" /><path strokeLinecap="round" strokeLinejoin="round" d="M10.172 13.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.102 1.101" /></svg>
-                                Link
-                              </a>
-                            )}
-                            {job.notes && (
-                              <span className="inline-flex items-center gap-1">
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
-                                {job.notes.length > 40 ? job.notes.slice(0, 40) + "..." : job.notes}
-                              </span>
-                            )}
-                            {job.createdAt && <span>{timeAgo(job.createdAt)}</span>}
-                            {job.followUpDate && (() => {
-                              const today = new Date(); today.setHours(0,0,0,0);
-                              const fDate = new Date(job.followUpDate); fDate.setHours(0,0,0,0);
-                              const diffDays = Math.ceil((fDate - today) / 86400000);
-                              const isOverdue = diffDays < 0;
-                              const isToday = diffDays === 0;
-                              const isSoon = diffDays > 0 && diffDays <= 3;
-                              return (
-                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                                  isOverdue ? "bg-red-100 text-red-700" : isToday ? "bg-amber-100 text-amber-700" : isSoon ? "bg-yellow-100 text-yellow-700" : "bg-blue-100 text-blue-700"
-                                }`}>
-                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
-                                  {isOverdue ? `Overdue ${Math.abs(diffDays)}d` : isToday ? "Due today" : `Due in ${diffDays}d`}
-                                </span>
-                              );
-                            })()}
-                          </div>
-
-                          {job.tags && job.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {job.tags.map((tag) => (
-                                <span key={tag} className={`px-2 py-0.5 rounded-md text-xs font-medium ${getTagColor(tag)}`}>{tag}</span>
-                              ))}
-                            </div>
-                          )}
-
-                          {job.timeline && job.timeline.length > 0 && (
-                            <div className="mt-2">
-                              <button
-                                onClick={() => setExpandedTimeline(expandedTimeline === job._id ? null : job._id)}
-                                className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-brand-600 transition-colors"
-                              >
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                {job.timeline.length} {job.timeline.length === 1 ? "event" : "events"}
-                                <svg className={`w-3 h-3 transition-transform ${expandedTimeline === job._id ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                              </button>
-                              {expandedTimeline === job._id && (
-                                <div className="mt-2 ml-1 border-l-2 border-line-strong pl-4 space-y-2.5 py-1">
-                                  {[...job.timeline].reverse().map((entry, i) => (
-                                    <div key={i} className="relative flex items-start gap-3">
-                                      <div className={`absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full border-2 border-white ${STATUS_STYLES[entry.status]?.dot || "bg-gray-400"}`} />
-                                      <div>
-                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLES[entry.status]?.badge || "bg-gray-100 text-body"}`}>
-                                          {entry.status}
-                                        </span>
-                                        <p className="text-xs text-muted mt-0.5">
-                                          {new Date(entry.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                                          {" · "}
-                                          {new Date(entry.date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          <div className="flex gap-2 mt-3 flex-wrap lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => setEditJob({ ...job })} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-50 text-body hover:bg-brand-100 transition-colors">Edit</button>
-                            <button onClick={() => archiveJob(job._id, true)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors">Archive</button>
-                            <button onClick={() => setDeleteTarget(job)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors">Delete</button>
-                            <div className="h-6 w-px bg-line-strong mx-1" />
-                            {["Applied", "Interview", "Offer", "Rejected"]
-                              .filter((s) => s !== job.status)
-                              .map((s) => (
-                                <button key={s} onClick={() => updateJob(job._id, { status: s })} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${STATUS_STYLES[s].btn}`}>{s}</button>
-                              ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-
-          {activeTab === "archived" && (
-            <>
-              {archivedJobs.length === 0 ? (
-                <div className="bg-card rounded-xl border border-line p-12 text-center">
-                  <svg className="w-12 h-12 text-faint mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
-                  <p className="text-body font-medium">No archived applications</p>
-                  <p className="text-sm text-muted mt-1">Applications you archive will appear here.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
+        {activeTab === "archived" && (
+          <>
+            {archivedJobs.length === 0 ? (
+              <div className="bg-card rounded-2xl border border-line p-12 text-center">
+                <svg className="w-12 h-12 text-faint mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
+                <p className="text-body font-medium">No archived applications</p>
+                <p className="text-sm text-muted mt-1">Applications you archive will appear here.</p>
+              </div>
+            ) : (
+              <div className="bg-card rounded-2xl border border-line overflow-hidden">
+                <div className="divide-y divide-line">
                   {archivedJobs.map((job) => (
-                    <div key={job._id} className="bg-card rounded-xl border border-line p-5 opacity-75 hover:opacity-100 transition-all group">
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 bg-brand-50 text-body">
-                          {job.company.charAt(0).toUpperCase()}
+                    <div key={job._id} className="flex items-center gap-4 px-5 py-4 hover:bg-page/50 transition-colors group opacity-70 hover:opacity-100">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-heading truncate">
+                          {job.company} <span className="font-normal text-muted">·</span> <span className="font-normal text-body">{job.role}</span>
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-muted">{job.createdAt && timeAgo(job.createdAt)}</span>
+                          {job.tags && job.tags.map((tag) => (
+                            <span key={tag} className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${getTagColor(tag)}`}>{tag}</span>
+                          ))}
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <h3 className="text-sm font-semibold text-heading">{job.company}</h3>
-                              <p className="text-sm text-body">{job.role}</p>
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-brand-50 text-muted">Archived</span>
-                              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-heading"}`}>
-                                {job.status}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3 mt-2 text-xs text-muted">
-                            {job.createdAt && <span>{timeAgo(job.createdAt)}</span>}
-                          </div>
-                          {job.tags && job.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {job.tags.map((tag) => (
-                                <span key={tag} className={`px-2 py-0.5 rounded-md text-xs font-medium ${getTagColor(tag)}`}>{tag}</span>
-                              ))}
-                            </div>
-                          )}
-                          <div className="flex gap-2 mt-3 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => archiveJob(job._id, false)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-50 text-brand-600 hover:bg-brand-100 transition-colors">Restore</button>
-                            <button onClick={() => setDeleteTarget(job)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors">Delete</button>
-                          </div>
-                        </div>
+                      </div>
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-body"}`}>{job.status}</span>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <button onClick={() => archiveJob(job._id, false)} className="px-3 py-1.5 rounded-lg text-xs font-medium text-brand-400 hover:bg-brand-500/10 transition-colors">Restore</button>
+                        <button onClick={() => setDeleteTarget(job)} className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 transition-colors">Delete</button>
                       </div>
                     </div>
                   ))}
                 </div>
-              )}
-            </>
-          )}
+              </div>
+            )}
+          </>
+        )}
 
-          {activeTab === "ai" && <AITailorTab authHeader={authHeader} />}
-        </main>
-      </div>
+        {activeTab === "ai" && <AITailorTab authHeader={authHeader} />}
+      </main>
 
+      {/* Edit Modal */}
       {editJob && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setEditJob(null)}>
-          <div className="bg-card rounded-xl shadow-2xl w-full max-w-md p-6 border border-line-strong" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setEditJob(null)}>
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-md p-6 border border-line-strong" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-semibold text-heading">Edit Application</h3>
-              <button onClick={() => setEditJob(null)} className="p-1 text-muted hover:text-body rounded-lg hover:bg-brand-50">
+              <button onClick={() => setEditJob(null)} className="p-1 text-muted hover:text-body rounded-lg hover:bg-page">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -957,7 +926,7 @@ export default function Dashboard() {
               >
                 Save Changes
               </button>
-              <button onClick={() => setEditJob(null)} className="px-5 py-2.5 border border-line-strongtext-body rounded-lg text-sm font-medium hover:bg-brand-50/50 transition-colors">
+              <button onClick={() => setEditJob(null)} className="px-5 py-2.5 border border-line-strong text-body rounded-lg text-sm font-medium hover:bg-page transition-colors">
                 Cancel
               </button>
             </div>
@@ -965,11 +934,12 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Delete Modal */}
       {deleteTarget && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setDeleteTarget(null)}>
-          <div className="bg-card rounded-xl shadow-2xl w-full max-w-sm p-6 text-center border border-line-strong" onClick={(e) => e.stopPropagation()}>
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setDeleteTarget(null)}>
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center border border-line-strong" onClick={(e) => e.stopPropagation()}>
+            <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
               </svg>
             </div>
@@ -978,7 +948,7 @@ export default function Dashboard() {
               <span className="font-medium text-heading">{deleteTarget.company} — {deleteTarget.role}</span> will be permanently removed.
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setDeleteTarget(null)} className="flex-1 px-4 py-2.5 border border-line-strongtext-body rounded-lg text-sm font-medium hover:bg-brand-50/50 transition-colors">
+              <button onClick={() => setDeleteTarget(null)} className="flex-1 px-4 py-2.5 border border-line-strong text-body rounded-lg text-sm font-medium hover:bg-page transition-colors">
                 Cancel
               </button>
               <button onClick={() => deleteJob(deleteTarget._id)} className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors">

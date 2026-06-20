@@ -1,10 +1,10 @@
 export const API = "https://job-tracker-backend-s1fc.onrender.com";
 
 export const STATUS_STYLES = {
-  Applied: { badge: "bg-brand-100 text-brand-700", btn: "bg-brand-50 text-brand-600 hover:bg-brand-100", dot: "bg-brand-500" },
-  Interview: { badge: "bg-amber-100 text-amber-700", btn: "bg-amber-50 text-amber-600 hover:bg-amber-100", dot: "bg-amber-500" },
-  Offer: { badge: "bg-emerald-100 text-emerald-700", btn: "bg-emerald-50 text-emerald-600 hover:bg-emerald-100", dot: "bg-emerald-500" },
-  Rejected: { badge: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400", btn: "bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50", dot: "bg-red-500" },
+  Applied: { badge: "bg-brand-100 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400", btn: "bg-brand-50 text-brand-600 hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-400 dark:hover:bg-brand-500/20", dot: "bg-brand-500" },
+  Interview: { badge: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400", btn: "bg-amber-50 text-amber-600 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20", dot: "bg-amber-500" },
+  Offer: { badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400", btn: "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20", dot: "bg-emerald-500" },
+  Rejected: { badge: "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400", btn: "bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20", dot: "bg-red-500" },
 };
 
 export const CHART_COLORS_LIGHT = ["#4f46e5", "#f59e0b", "#10b981", "#6b7280"];
