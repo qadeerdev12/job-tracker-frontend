@@ -39,6 +39,9 @@ export default function Dashboard() {
   const [intType, setIntType] = useState("Other");
   const [intLocation, setIntLocation] = useState("");
   const [intNotes, setIntNotes] = useState("");
+  const [weeklyGoal, setWeeklyGoal] = useState(10);
+  const [editingGoal, setEditingGoal] = useState(false);
+  const [goalInput, setGoalInput] = useState("10");
 
   const [session, setSession] = useState(null);
 
@@ -119,6 +122,16 @@ export default function Dashboard() {
     }
   };
 
+  const fetchSettings = async () => {
+    try {
+      const res = await axios.get(`${API}/api/jobs/settings`, authHeader());
+      setWeeklyGoal(res.data.weeklyGoal);
+      setGoalInput(String(res.data.weeklyGoal));
+    } catch (error) {
+      console.log(error.response?.data || error.message);
+    }
+  };
+
   useEffect(() => {
     if (!session) return;
     fetchJobs();
@@ -128,6 +141,7 @@ export default function Dashboard() {
     fetchActivities();
     fetchReminders();
     fetchInterviews();
+    fetchSettings();
   }, [session]);
 
   const createJob = async (e) => {
@@ -279,6 +293,17 @@ export default function Dashboard() {
     ];
   }, [totalApps, stats]);
 
+  const weeklyApps = useMemo(() => {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
+    monday.setHours(0, 0, 0, 0);
+    return jobs.filter((j) => new Date(j.createdAt) >= monday).length;
+  }, [jobs]);
+
+  const goalPct = weeklyGoal > 0 ? Math.min(100, Math.round((weeklyApps / weeklyGoal) * 100)) : 0;
+
   const navItems = [
     { id: "dashboard", label: "Dashboard" },
     { id: "applications", label: "Applications" },
@@ -388,16 +413,87 @@ export default function Dashboard() {
       {/* Summary Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-2">
         <div className="bg-card rounded-2xl border border-line p-6 sm:p-8">
-          <p className="text-sm text-muted mb-1">{dateStr}</p>
-          <h1 className="text-2xl sm:text-3xl font-bold text-heading mb-6">{firstName}'s Summary</h1>
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            <div className="flex-1">
+              <p className="text-sm text-muted mb-1">{dateStr}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-heading mb-6">{firstName}'s Summary</h1>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-            {summaryStats.map((stat) => (
-              <div key={stat.label} className="bg-page rounded-xl p-4 border border-line">
-                <p className="text-[11px] font-semibold text-muted tracking-wider mb-1">{stat.label}</p>
-                <p className={`text-2xl sm:text-3xl font-bold ${stat.color}`}>{stat.count}</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                {summaryStats.map((stat) => (
+                  <div key={stat.label} className="bg-page rounded-xl p-4 border border-line">
+                    <p className="text-[11px] font-semibold text-muted tracking-wider mb-1">{stat.label}</p>
+                    <p className={`text-2xl sm:text-3xl font-bold ${stat.color}`}>{stat.count}</p>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* Weekly Goal Ring */}
+            <div className="flex flex-col items-center shrink-0">
+              <p className="text-[11px] font-semibold text-muted tracking-wider mb-3">WEEKLY GOAL</p>
+              <div className="relative w-28 h-28">
+                <svg className="w-28 h-28 -rotate-90" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="var(--color-line-strong)" strokeWidth="8" />
+                  <circle
+                    cx="60" cy="60" r="50" fill="none"
+                    stroke={goalPct >= 100 ? "#10b981" : goalPct >= 50 ? "#3b82f6" : "var(--color-brand-400)"}
+                    strokeWidth="8" strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 50}`}
+                    strokeDashoffset={`${2 * Math.PI * 50 * (1 - goalPct / 100)}`}
+                    className="transition-all duration-700"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className={`text-2xl font-bold ${goalPct >= 100 ? "text-emerald-400" : "text-heading"}`}>{weeklyApps}</span>
+                  <span className="text-[10px] text-muted">/ {weeklyGoal}</span>
+                </div>
+              </div>
+              {goalPct >= 100 && (
+                <p className="text-xs text-emerald-400 font-medium mt-2">Goal reached!</p>
+              )}
+              {editingGoal ? (
+                <div className="flex items-center gap-1.5 mt-2">
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={goalInput}
+                    onChange={(e) => setGoalInput(e.target.value)}
+                    className="w-14 px-2 py-1 text-xs text-center border border-line-strong bg-input-bg rounded-lg text-heading outline-none focus:ring-1 focus:ring-brand-400"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        const val = Math.max(1, Math.min(100, parseInt(goalInput) || 10));
+                        setWeeklyGoal(val);
+                        setGoalInput(String(val));
+                        setEditingGoal(false);
+                        axios.put(`${API}/api/jobs/settings`, { weeklyGoal: val }, authHeader()).catch(() => {});
+                      }
+                      if (e.key === "Escape") setEditingGoal(false);
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      const val = Math.max(1, Math.min(100, parseInt(goalInput) || 10));
+                      setWeeklyGoal(val);
+                      setGoalInput(String(val));
+                      setEditingGoal(false);
+                      axios.put(`${API}/api/jobs/settings`, { weeklyGoal: val }, authHeader()).catch(() => {});
+                    }}
+                    className="px-2 py-1 text-xs bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors"
+                  >
+                    Set
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setEditingGoal(true)}
+                  className="text-[10px] text-muted hover:text-brand-400 mt-2 transition-colors"
+                >
+                  Edit goal
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
