@@ -32,6 +32,13 @@ export default function Dashboard() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [expandedTimeline, setExpandedTimeline] = useState(null);
   const [reminders, setReminders] = useState([]);
+  const [upcomingInterviews, setUpcomingInterviews] = useState([]);
+  const [interviewModal, setInterviewModal] = useState(null);
+  const [intDate, setIntDate] = useState("");
+  const [intTime, setIntTime] = useState("");
+  const [intType, setIntType] = useState("Other");
+  const [intLocation, setIntLocation] = useState("");
+  const [intNotes, setIntNotes] = useState("");
 
   const [session, setSession] = useState(null);
 
@@ -103,6 +110,15 @@ export default function Dashboard() {
     }
   };
 
+  const fetchInterviews = async () => {
+    try {
+      const res = await axios.get(`${API}/api/jobs/interviews`, authHeader());
+      setUpcomingInterviews(res.data);
+    } catch (error) {
+      console.log(error.response?.data || error.message);
+    }
+  };
+
   useEffect(() => {
     if (!session) return;
     fetchJobs();
@@ -111,6 +127,7 @@ export default function Dashboard() {
     fetchArchivedJobs();
     fetchActivities();
     fetchReminders();
+    fetchInterviews();
   }, [session]);
 
   const createJob = async (e) => {
@@ -122,6 +139,7 @@ export default function Dashboard() {
       fetchTags();
       fetchActivities();
       fetchReminders();
+      fetchInterviews();
       setCompany("");
       setRole("");
       setStatus("Applied");
@@ -144,6 +162,7 @@ export default function Dashboard() {
       fetchArchivedJobs();
       fetchActivities();
       fetchReminders();
+      fetchInterviews();
       setDeleteTarget(null);
     } catch (error) {
       console.log(error.response?.data || error.message);
@@ -158,6 +177,7 @@ export default function Dashboard() {
       fetchTags();
       fetchActivities();
       fetchReminders();
+      fetchInterviews();
       setEditJob(null);
     } catch (error) {
       console.log(error.response?.data || error.message);
@@ -172,6 +192,7 @@ export default function Dashboard() {
       fetchArchivedJobs();
       fetchActivities();
       fetchReminders();
+      fetchInterviews();
     } catch (error) {
       console.log(error.response?.data || error.message);
     }
@@ -261,6 +282,7 @@ export default function Dashboard() {
   const navItems = [
     { id: "dashboard", label: "Dashboard" },
     { id: "applications", label: "Applications" },
+    { id: "interviews", label: "Interviews" },
     { id: "archived", label: "Archived" },
     { id: "activity", label: "Activity" },
     { id: "ai", label: "AI Tailor" },
@@ -832,6 +854,129 @@ export default function Dashboard() {
           </>
         )}
 
+        {activeTab === "interviews" && (
+          <>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-lg font-semibold text-heading">Upcoming Interviews</h2>
+                <p className="text-sm text-muted mt-0.5">{upcomingInterviews.length} scheduled</p>
+              </div>
+              <button
+                onClick={() => {
+                  setInterviewModal({ mode: "add", jobId: null });
+                  setIntDate("");
+                  setIntTime("");
+                  setIntType("Other");
+                  setIntLocation("");
+                  setIntNotes("");
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                Schedule Interview
+              </button>
+            </div>
+
+            {upcomingInterviews.length === 0 ? (
+              <div className="bg-card rounded-2xl border border-line p-12 text-center">
+                <svg className="w-12 h-12 text-faint mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+                <p className="text-body font-medium">No upcoming interviews</p>
+                <p className="text-sm text-muted mt-1">Schedule an interview for one of your applications to see it here.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {(() => {
+                  const grouped = {};
+                  upcomingInterviews.forEach((int) => {
+                    const d = new Date(int.date);
+                    const today = new Date(); today.setHours(0,0,0,0);
+                    const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+                    const intDay = new Date(d); intDay.setHours(0,0,0,0);
+                    let label;
+                    if (intDay.getTime() === today.getTime()) label = "Today";
+                    else if (intDay.getTime() === tomorrow.getTime()) label = "Tomorrow";
+                    else label = d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+                    if (!grouped[label]) grouped[label] = [];
+                    grouped[label].push(int);
+                  });
+                  return Object.entries(grouped).map(([dateLabel, interviews]) => (
+                    <div key={dateLabel}>
+                      <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">{dateLabel}</h3>
+                      <div className="space-y-2">
+                        {interviews.map((int) => {
+                          const typeColors = {
+                            "Phone Screen": "bg-blue-500/10 text-blue-400 border-blue-500/20",
+                            "Technical": "bg-purple-500/10 text-purple-400 border-purple-500/20",
+                            "Behavioral": "bg-amber-500/10 text-amber-400 border-amber-500/20",
+                            "System Design": "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+                            "Take-Home": "bg-orange-500/10 text-orange-400 border-orange-500/20",
+                            "Final Round": "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                            "HR": "bg-pink-500/10 text-pink-400 border-pink-500/20",
+                            "Other": "bg-gray-500/10 text-body border-gray-500/20",
+                          };
+                          return (
+                            <div key={int._id} className="bg-card rounded-xl border border-line p-4 flex items-center gap-4 hover:border-brand-400/30 transition-colors group">
+                              <div className="w-12 h-12 rounded-xl bg-brand-500/10 flex flex-col items-center justify-center shrink-0">
+                                <span className="text-[10px] font-semibold text-brand-400 uppercase leading-none">
+                                  {new Date(int.date).toLocaleDateString("en-US", { month: "short" })}
+                                </span>
+                                <span className="text-lg font-bold text-heading leading-tight">
+                                  {new Date(int.date).getDate()}
+                                </span>
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-semibold text-heading truncate">
+                                  {int.company} <span className="font-normal text-muted">·</span> <span className="font-normal text-body">{int.role}</span>
+                                </p>
+                                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                  {int.time && (
+                                    <span className="flex items-center gap-1 text-xs text-muted">
+                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                      {int.time}
+                                    </span>
+                                  )}
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium border ${typeColors[int.type] || typeColors["Other"]}`}>
+                                    {int.type}
+                                  </span>
+                                  {int.location && (
+                                    <span className="flex items-center gap-1 text-xs text-muted truncate max-w-[200px]">
+                                      <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.31a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.343 8.05" /></svg>
+                                      {int.location}
+                                    </span>
+                                  )}
+                                </div>
+                                {int.notes && <p className="text-xs text-muted mt-1 truncate">{int.notes}</p>}
+                              </div>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const job = jobs.find((j) => j._id === int.jobId);
+                                    if (!job) return;
+                                    const updated = (job.interviews || []).filter((i) => i._id !== int._id);
+                                    await axios.put(`${API}/api/jobs/${int.jobId}`, { interviews: updated }, authHeader());
+                                    fetchJobs();
+                                    fetchInterviews();
+                                  } catch (error) {
+                                    console.log(error.response?.data || error.message);
+                                  }
+                                }}
+                                className="p-1.5 rounded-lg text-muted hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                                title="Remove interview"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+            )}
+          </>
+        )}
+
         {activeTab === "archived" && (
           <>
             {archivedJobs.length === 0 ? (
@@ -921,7 +1066,7 @@ export default function Dashboard() {
 
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => updateJob(editJob._id, { company: editJob.company, role: editJob.role, status: editJob.status, link: editJob.link, notes: editJob.notes, tags: editJob.tags || [], followUpDate: editJob.followUpDate || null })}
+                onClick={() => updateJob(editJob._id, { company: editJob.company, role: editJob.role, status: editJob.status, link: editJob.link, notes: editJob.notes, tags: editJob.tags || [], followUpDate: editJob.followUpDate || null, interviews: editJob.interviews || [] })}
                 className="flex-1 bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-lg text-sm font-medium shadow-sm transition-colors"
               >
                 Save Changes
@@ -953,6 +1098,107 @@ export default function Dashboard() {
               </button>
               <button onClick={() => deleteJob(deleteTarget._id)} className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors">
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Interview Schedule Modal */}
+      {interviewModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setInterviewModal(null)}>
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-md p-6 border border-line-strong" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-semibold text-heading">Schedule Interview</h3>
+              <button onClick={() => setInterviewModal(null)} className="p-1 text-muted hover:text-body rounded-lg hover:bg-page">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-body mb-1.5">Application *</label>
+                <select
+                  value={interviewModal.jobId || ""}
+                  onChange={(e) => setInterviewModal({ ...interviewModal, jobId: e.target.value })}
+                  className={inputClass}
+                >
+                  <option value="">Select an application...</option>
+                  {jobs.filter((j) => j.status !== "Rejected").map((j) => (
+                    <option key={j._id} value={j._id}>{j.company} — {j.role}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-body mb-1.5">Date *</label>
+                  <input type="date" value={intDate} onChange={(e) => setIntDate(e.target.value)} className={inputClass} />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-body mb-1.5">Time</label>
+                  <input type="time" value={intTime} onChange={(e) => setIntTime(e.target.value)} className={inputClass} />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-body mb-1.5">Interview Type</label>
+                <select value={intType} onChange={(e) => setIntType(e.target.value)} className={inputClass}>
+                  <option value="Phone Screen">Phone Screen</option>
+                  <option value="Technical">Technical</option>
+                  <option value="Behavioral">Behavioral</option>
+                  <option value="System Design">System Design</option>
+                  <option value="Take-Home">Take-Home</option>
+                  <option value="Final Round">Final Round</option>
+                  <option value="HR">HR</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-body mb-1.5">Location / Meeting Link</label>
+                <input type="text" placeholder="e.g. Zoom link, office address..." value={intLocation} onChange={(e) => setIntLocation(e.target.value)} className={inputClass} />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-body mb-1.5">Notes</label>
+                <textarea placeholder="Prep notes, interviewer name..." value={intNotes} onChange={(e) => setIntNotes(e.target.value)} rows={2} className={`${inputClass} resize-none`} />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                disabled={!interviewModal.jobId || !intDate}
+                onClick={async () => {
+                  try {
+                    const job = jobs.find((j) => j._id === interviewModal.jobId);
+                    if (!job) return;
+                    const newInterview = {
+                      date: intDate,
+                      time: intTime || null,
+                      type: intType,
+                      location: intLocation || null,
+                      notes: intNotes || null,
+                    };
+                    const updatedInterviews = [...(job.interviews || []), newInterview];
+                    await axios.put(`${API}/api/jobs/${interviewModal.jobId}`, {
+                      interviews: updatedInterviews,
+                      status: job.status === "Applied" ? "Interview" : job.status,
+                    }, authHeader());
+                    fetchJobs();
+                    fetchStats();
+                    fetchInterviews();
+                    fetchActivities();
+                    setInterviewModal(null);
+                  } catch (error) {
+                    console.log(error.response?.data || error.message);
+                  }
+                }}
+                className="flex-1 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-2.5 rounded-lg text-sm font-medium shadow-sm transition-colors"
+              >
+                Schedule Interview
+              </button>
+              <button onClick={() => setInterviewModal(null)} className="px-5 py-2.5 border border-line-strong text-body rounded-lg text-sm font-medium hover:bg-page transition-colors">
+                Cancel
               </button>
             </div>
           </div>
