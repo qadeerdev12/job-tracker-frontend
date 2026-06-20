@@ -15,7 +15,7 @@ export default function Sidebar({ activeTab, setActiveTab, handleLogout, initial
           <div className="w-8 h-8 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><rect x="3" y="7" width="18" height="13" rx="2" strokeLinecap="round" strokeLinejoin="round" /><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5.5A1.5 1.5 0 019.5 4h5A1.5 1.5 0 0116 5.5V7" /><polyline points="9,13.5 11,15.5 15,11.5" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></svg>
           </div>
-          <span className="text-xl font-bold text-brand-400 tracking-tight">ApplyFlow</span>
+          <span className="text-xl font-bold text-brand-400 tracking-tight">TailorTrack</span>
         </div>
       </div>
 

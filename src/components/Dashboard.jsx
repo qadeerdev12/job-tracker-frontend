@@ -707,7 +707,7 @@ export default function Dashboard() {
                         const url = window.URL.createObjectURL(new Blob([res.data]));
                         const a = document.createElement("a");
                         a.href = url;
-                        a.download = "applyflow-export.csv";
+                        a.download = "tailortrack-export.csv";
                         a.click();
                         window.URL.revokeObjectURL(url);
                       } catch (error) {

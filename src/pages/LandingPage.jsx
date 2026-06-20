@@ -8,7 +8,7 @@ function LandingPage({ setPage }) {
             <div className="w-8 h-8 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><rect x="3" y="7" width="18" height="13" rx="2" strokeLinecap="round" strokeLinejoin="round" /><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5.5A1.5 1.5 0 019.5 4h5A1.5 1.5 0 0116 5.5V7" /><polyline points="9,13.5 11,15.5 15,11.5" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></svg>
             </div>
-            <span className="text-2xl font-extrabold text-brand-600">ApplyFlow</span>
+            <span className="text-2xl font-extrabold text-brand-600">TailorTrack</span>
           </div>
           <div className="flex gap-3">
             <button
@@ -186,7 +186,7 @@ function LandingPage({ setPage }) {
             Ready to take control of your job search?
           </h2>
           <p className="text-white/80 text-lg mb-10">
-            Join ApplyFlow today — it's free to get started.
+            Join TailorTrack today — it's free to get started.
           </p>
           <button
             onClick={() => setPage("register")}
@@ -204,9 +204,9 @@ function LandingPage({ setPage }) {
             <div className="w-6 h-6 bg-gradient-to-br from-brand-400 to-brand-600 rounded-md flex items-center justify-center">
               <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><rect x="3" y="7" width="18" height="13" rx="2" strokeLinecap="round" strokeLinejoin="round" /><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5.5A1.5 1.5 0 019.5 4h5A1.5 1.5 0 0116 5.5V7" /><polyline points="9,13.5 11,15.5 15,11.5" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" /></svg>
             </div>
-            <span className="text-brand-400 font-bold">ApplyFlow</span>
+            <span className="text-brand-400 font-bold">TailorTrack</span>
           </div>
-          <p className="text-muted text-sm mt-2">&copy; 2026 ApplyFlow. All rights reserved.</p>
+          <p className="text-muted text-sm mt-2">&copy; 2026 TailorTrack. All rights reserved.</p>
         </div>
       </footer>
     </div>
