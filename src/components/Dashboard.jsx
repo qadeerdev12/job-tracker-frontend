@@ -1157,7 +1157,55 @@ export default function Dashboard() {
                 </div>
                 <div className="flex items-center justify-between py-3 border-t border-line">
                   <span className="text-sm text-muted">Weekly Goal</span>
-                  <span className="text-sm font-medium text-body">{weeklyGoal} apps/week</span>
+                  {editingGoal ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={goalInput}
+                        onChange={(e) => setGoalInput(e.target.value)}
+                        className="w-16 px-2 py-1 text-sm text-center border border-line-strong bg-input-bg rounded-lg text-heading outline-none focus:ring-1 focus:ring-brand-400"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            const val = Math.max(1, Math.min(100, parseInt(goalInput) || 10));
+                            setWeeklyGoal(val);
+                            setGoalInput(String(val));
+                            setEditingGoal(false);
+                            axios.put(`${API}/api/jobs/settings`, { weeklyGoal: val }, authHeader()).catch(() => {});
+                          }
+                          if (e.key === "Escape") setEditingGoal(false);
+                        }}
+                      />
+                      <button
+                        onClick={() => {
+                          const val = Math.max(1, Math.min(100, parseInt(goalInput) || 10));
+                          setWeeklyGoal(val);
+                          setGoalInput(String(val));
+                          setEditingGoal(false);
+                          axios.put(`${API}/api/jobs/settings`, { weeklyGoal: val }, authHeader()).catch(() => {});
+                        }}
+                        className="px-2.5 py-1 text-xs bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors font-medium"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => { setEditingGoal(false); setGoalInput(String(weeklyGoal)); }}
+                        className="px-2.5 py-1 text-xs text-muted hover:text-body border border-line-strong rounded-lg transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => { setGoalInput(String(weeklyGoal)); setEditingGoal(true); }}
+                      className="flex items-center gap-1.5 text-sm font-medium text-body hover:text-brand-400 transition-colors group"
+                    >
+                      {weeklyGoal} apps/week
+                      <svg className="w-3.5 h-3.5 text-muted group-hover:text-brand-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" /></svg>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
