@@ -46,6 +46,9 @@ export default function Dashboard() {
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [sendingTestEmail, setSendingTestEmail] = useState(false);
+  const [testEmailMsg, setTestEmailMsg] = useState("");
 
   const [session, setSession] = useState(null);
 
@@ -131,6 +134,7 @@ export default function Dashboard() {
       const res = await axios.get(`${API}/api/jobs/settings`, authHeader());
       setWeeklyGoal(res.data.weeklyGoal);
       setGoalInput(String(res.data.weeklyGoal));
+      if (res.data.emailNotifications !== undefined) setEmailNotifications(res.data.emailNotifications);
     } catch (error) {
       console.log(error.response?.data || error.message);
     }
@@ -1214,8 +1218,63 @@ export default function Dashboard() {
               </div>
             </div>
 
+            <div className="bg-card rounded-2xl border border-line p-6">
+              <h3 className="text-lg font-semibold text-heading mb-1">Email Notifications</h3>
+              <p className="text-xs text-muted mb-4">Receive a weekly summary email every Monday with your stats, upcoming interviews, and follow-up reminders.</p>
+              <div className="flex items-center justify-between py-3 border-t border-line">
+                <span className="text-sm text-muted">Weekly Summary Email</span>
+                <button
+                  onClick={() => {
+                    const val = !emailNotifications;
+                    setEmailNotifications(val);
+                    axios.put(`${API}/api/jobs/settings`, { emailNotifications: val }, authHeader()).catch(() => setEmailNotifications(!val));
+                  }}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${emailNotifications ? "bg-brand-600" : "bg-gray-300 dark:bg-gray-600"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${emailNotifications ? "translate-x-5" : ""}`} />
+                </button>
+              </div>
+              {emailNotifications && (
+                <div className="mt-3 pt-3 border-t border-line">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={async () => {
+                        setSendingTestEmail(true);
+                        setTestEmailMsg("");
+                        try {
+                          const res = await axios.post(`${API}/api/jobs/send-test-email`, {}, authHeader());
+                          setTestEmailMsg(res.data.message);
+                        } catch (err) {
+                          setTestEmailMsg(err.response?.data?.message || "Failed to send test email");
+                        } finally {
+                          setSendingTestEmail(false);
+                        }
+                      }}
+                      disabled={sendingTestEmail}
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-brand-600 dark:text-brand-400 border border-brand-300 dark:border-brand-600 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors disabled:opacity-50"
+                    >
+                      {sendingTestEmail ? (
+                        <>
+                          <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                          Send Test Email
+                        </>
+                      )}
+                    </button>
+                    {testEmailMsg && (
+                      <span className={`text-xs ${testEmailMsg.includes("Failed") ? "text-red-500" : "text-emerald-500"}`}>{testEmailMsg}</span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="bg-card rounded-2xl border border-red-500/20 p-6">
-              <h3 className="text-lg font-semibold text-red-400 mb-2">Danger Zone</h3>
+              <h3 className="text-lg font-semibold text-red-400 mb-2">Delete Account Permenantely</h3>
               <p className="text-sm text-muted mb-4">
                 Permanently delete your account and all associated data. This includes all job applications, interview records, activity history, and settings. This action cannot be undone.
               </p>
