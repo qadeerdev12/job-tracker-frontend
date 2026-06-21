@@ -169,8 +169,6 @@ export default function Dashboard() {
       fetchStats();
       fetchTags();
       fetchActivities();
-      fetchReminders();
-      fetchInterviews();
       setCompany("");
       setRole("");
       setStatus("Applied");
@@ -242,8 +240,6 @@ export default function Dashboard() {
       fetchTags();
       fetchArchivedJobs();
       fetchActivities();
-      fetchReminders();
-      fetchInterviews();
       setDeleteTarget(null);
     } catch (error) {
       console.log(error.response?.data || error.message);
@@ -255,10 +251,7 @@ export default function Dashboard() {
       await axios.put(`${API}/api/jobs/${jobId}`, data, authHeader());
       fetchJobs();
       fetchStats();
-      fetchTags();
       fetchActivities();
-      fetchReminders();
-      fetchInterviews();
       setEditJob(null);
     } catch (error) {
       console.log(error.response?.data || error.message);
@@ -272,8 +265,6 @@ export default function Dashboard() {
       fetchStats();
       fetchArchivedJobs();
       fetchActivities();
-      fetchReminders();
-      fetchInterviews();
     } catch (error) {
       console.log(error.response?.data || error.message);
     }
