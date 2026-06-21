@@ -52,6 +52,9 @@ export default function Dashboard() {
   const [importUrl, setImportUrl] = useState("");
   const [importLoading, setImportLoading] = useState(false);
   const [importError, setImportError] = useState("");
+  const [formContacts, setFormContacts] = useState([]);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactInput, setContactInput] = useState({ name: "", role: "", email: "", phone: "", linkedin: "", notes: "" });
 
   const [session, setSession] = useState(null);
 
@@ -158,7 +161,7 @@ export default function Dashboard() {
   const createJob = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API}/api/jobs`, { company, role, status, link, notes, tags: formTags, followUpDate: followUpDate || null }, authHeader());
+      await axios.post(`${API}/api/jobs`, { company, role, status, link, notes, tags: formTags, followUpDate: followUpDate || null, contacts: formContacts }, authHeader());
       fetchJobs();
       fetchStats();
       fetchTags();
@@ -172,6 +175,9 @@ export default function Dashboard() {
       setNotes("");
       setFollowUpDate("");
       setFormTags([]);
+      setFormContacts([]);
+      setShowContactForm(false);
+      setContactInput({ name: "", role: "", email: "", phone: "", linkedin: "", notes: "" });
       setActiveTab("applications");
     } catch (error) {
       console.log(error.response?.data || error.message);
@@ -848,6 +854,59 @@ export default function Dashboard() {
                 </div>
 
                 <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-medium text-body">Contacts</label>
+                    <button type="button" onClick={() => setShowContactForm(!showContactForm)} className="text-xs text-brand-500 hover:text-brand-400 font-medium">
+                      {showContactForm ? "Cancel" : "+ Add Contact"}
+                    </button>
+                  </div>
+
+                  {showContactForm && (
+                    <div className="border border-line rounded-lg p-3 mb-2 space-y-2 bg-page/50">
+                      <div className="grid grid-cols-2 gap-2">
+                        <input type="text" placeholder="Name *" value={contactInput.name} onChange={(e) => setContactInput({ ...contactInput, name: e.target.value })} className={`${inputClass} !py-2 !text-xs`} />
+                        <input type="text" placeholder="Role (e.g. Recruiter)" value={contactInput.role} onChange={(e) => setContactInput({ ...contactInput, role: e.target.value })} className={`${inputClass} !py-2 !text-xs`} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input type="email" placeholder="Email" value={contactInput.email} onChange={(e) => setContactInput({ ...contactInput, email: e.target.value })} className={`${inputClass} !py-2 !text-xs`} />
+                        <input type="text" placeholder="Phone" value={contactInput.phone} onChange={(e) => setContactInput({ ...contactInput, phone: e.target.value })} className={`${inputClass} !py-2 !text-xs`} />
+                      </div>
+                      <input type="url" placeholder="LinkedIn URL" value={contactInput.linkedin} onChange={(e) => setContactInput({ ...contactInput, linkedin: e.target.value })} className={`${inputClass} !py-2 !text-xs`} />
+                      <input type="text" placeholder="Notes about this contact" value={contactInput.notes} onChange={(e) => setContactInput({ ...contactInput, notes: e.target.value })} className={`${inputClass} !py-2 !text-xs`} />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!contactInput.name.trim()) return;
+                          setFormContacts([...formContacts, { ...contactInput }]);
+                          setContactInput({ name: "", role: "", email: "", phone: "", linkedin: "", notes: "" });
+                          setShowContactForm(false);
+                        }}
+                        className="w-full py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-medium transition-colors"
+                      >
+                        Add Contact
+                      </button>
+                    </div>
+                  )}
+
+                  {formContacts.length > 0 && (
+                    <div className="space-y-1.5">
+                      {formContacts.map((c, i) => (
+                        <div key={i} className="flex items-center justify-between px-3 py-2 bg-page/50 border border-line rounded-lg">
+                          <div className="min-w-0">
+                            <span className="text-xs font-medium text-heading">{c.name}</span>
+                            {c.role && <span className="text-xs text-muted ml-1.5">· {c.role}</span>}
+                            {c.email && <span className="text-[10px] text-muted block truncate">{c.email}</span>}
+                          </div>
+                          <button type="button" onClick={() => setFormContacts(formContacts.filter((_, j) => j !== i))} className="text-muted hover:text-red-500 ml-2 shrink-0">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div>
                   <label className="block text-xs font-medium text-body mb-1.5">Status</label>
                   <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputClass}>
                     <option value="Applied">Applied</option>
@@ -953,6 +1012,12 @@ export default function Dashboard() {
                           ))}
                           {job.notes && (
                             <span className="text-[11px] text-muted truncate max-w-[200px]">{job.notes.length > 30 ? job.notes.slice(0, 30) + "..." : job.notes}</span>
+                          )}
+                          {job.contacts?.length > 0 && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-400">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" /></svg>
+                              {job.contacts.length} {job.contacts.length === 1 ? "contact" : "contacts"}
+                            </span>
                           )}
                           <span className="sm:hidden">
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-body"}`}>{job.status}</span>
@@ -1382,11 +1447,63 @@ export default function Dashboard() {
                   <option value="Rejected">Rejected</option>
                 </select>
               </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-medium text-body">Contacts</label>
+                  <button type="button" onClick={() => setEditJob({ ...editJob, _showContactForm: !editJob._showContactForm, _contactInput: editJob._contactInput || { name: "", role: "", email: "", phone: "", linkedin: "", notes: "" } })} className="text-xs text-brand-500 hover:text-brand-400 font-medium">
+                    {editJob._showContactForm ? "Cancel" : "+ Add Contact"}
+                  </button>
+                </div>
+
+                {editJob._showContactForm && (
+                  <div className="border border-line rounded-lg p-3 mb-2 space-y-2 bg-page/50">
+                    <div className="grid grid-cols-2 gap-2">
+                      <input type="text" placeholder="Name *" value={editJob._contactInput?.name || ""} onChange={(e) => setEditJob({ ...editJob, _contactInput: { ...editJob._contactInput, name: e.target.value } })} className={`${inputClass} !py-2 !text-xs`} />
+                      <input type="text" placeholder="Role (e.g. Recruiter)" value={editJob._contactInput?.role || ""} onChange={(e) => setEditJob({ ...editJob, _contactInput: { ...editJob._contactInput, role: e.target.value } })} className={`${inputClass} !py-2 !text-xs`} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input type="email" placeholder="Email" value={editJob._contactInput?.email || ""} onChange={(e) => setEditJob({ ...editJob, _contactInput: { ...editJob._contactInput, email: e.target.value } })} className={`${inputClass} !py-2 !text-xs`} />
+                      <input type="text" placeholder="Phone" value={editJob._contactInput?.phone || ""} onChange={(e) => setEditJob({ ...editJob, _contactInput: { ...editJob._contactInput, phone: e.target.value } })} className={`${inputClass} !py-2 !text-xs`} />
+                    </div>
+                    <input type="url" placeholder="LinkedIn URL" value={editJob._contactInput?.linkedin || ""} onChange={(e) => setEditJob({ ...editJob, _contactInput: { ...editJob._contactInput, linkedin: e.target.value } })} className={`${inputClass} !py-2 !text-xs`} />
+                    <input type="text" placeholder="Notes about this contact" value={editJob._contactInput?.notes || ""} onChange={(e) => setEditJob({ ...editJob, _contactInput: { ...editJob._contactInput, notes: e.target.value } })} className={`${inputClass} !py-2 !text-xs`} />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!editJob._contactInput?.name?.trim()) return;
+                        const { name, role: r, email, phone, linkedin, notes: n } = editJob._contactInput;
+                        setEditJob({ ...editJob, contacts: [...(editJob.contacts || []), { name, role: r, email, phone, linkedin, notes: n }], _showContactForm: false, _contactInput: { name: "", role: "", email: "", phone: "", linkedin: "", notes: "" } });
+                      }}
+                      className="w-full py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-medium transition-colors"
+                    >
+                      Add Contact
+                    </button>
+                  </div>
+                )}
+
+                {editJob.contacts?.length > 0 && (
+                  <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                    {editJob.contacts.map((c, i) => (
+                      <div key={i} className="flex items-center justify-between px-3 py-2 bg-page/50 border border-line rounded-lg">
+                        <div className="min-w-0">
+                          <span className="text-xs font-medium text-heading">{c.name}</span>
+                          {c.role && <span className="text-xs text-muted ml-1.5">· {c.role}</span>}
+                          {c.email && <span className="text-[10px] text-muted block truncate">{c.email}</span>}
+                        </div>
+                        <button type="button" onClick={() => setEditJob({ ...editJob, contacts: editJob.contacts.filter((_, j) => j !== i) })} className="text-muted hover:text-red-500 ml-2 shrink-0">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => updateJob(editJob._id, { company: editJob.company, role: editJob.role, status: editJob.status, link: editJob.link, notes: editJob.notes, tags: editJob.tags || [], followUpDate: editJob.followUpDate || null, interviews: editJob.interviews || [] })}
+                onClick={() => updateJob(editJob._id, { company: editJob.company, role: editJob.role, status: editJob.status, link: editJob.link, notes: editJob.notes, tags: editJob.tags || [], followUpDate: editJob.followUpDate || null, interviews: editJob.interviews || [], contacts: editJob.contacts || [] })}
                 className="flex-1 bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-lg text-sm font-medium shadow-sm transition-colors"
               >
                 Save Changes
