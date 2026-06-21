@@ -49,6 +49,9 @@ export default function Dashboard() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [sendingTestEmail, setSendingTestEmail] = useState(false);
   const [testEmailMsg, setTestEmailMsg] = useState("");
+  const [importUrl, setImportUrl] = useState("");
+  const [importLoading, setImportLoading] = useState(false);
+  const [importError, setImportError] = useState("");
 
   const [session, setSession] = useState(null);
 
@@ -172,6 +175,25 @@ export default function Dashboard() {
       setActiveTab("applications");
     } catch (error) {
       console.log(error.response?.data || error.message);
+    }
+  };
+
+  const importFromUrl = async () => {
+    if (!importUrl.trim()) return;
+    setImportLoading(true);
+    setImportError("");
+    try {
+      const res = await axios.post(`${API}/api/jobs/scrape-job`, { url: importUrl.trim() }, authHeader());
+      const { company: c, role: r, location, link: l } = res.data;
+      if (c) setCompany(c);
+      if (r) setRole(r);
+      if (l) setLink(l);
+      if (location) setNotes(location);
+      setImportUrl("");
+    } catch (error) {
+      setImportError(error.response?.data?.message || "Could not extract job details from this URL");
+    } finally {
+      setImportLoading(false);
     }
   };
 
@@ -765,6 +787,32 @@ export default function Dashboard() {
               <div className="mb-6">
                 <h2 className="text-lg font-semibold text-heading">Track New Application</h2>
                 <p className="text-sm text-muted mt-1">Fill in the details below to add a job to your tracker.</p>
+              </div>
+
+              <div className="mb-6 pb-6 border-b border-line">
+                <label className="block text-xs font-medium text-body mb-1.5">Import from URL</label>
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    placeholder="Paste a LinkedIn, Indeed, or Glassdoor job URL..."
+                    value={importUrl}
+                    onChange={(e) => { setImportUrl(e.target.value); setImportError(""); }}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), importFromUrl())}
+                    className={`${inputClass} flex-1`}
+                  />
+                  <button
+                    type="button"
+                    onClick={importFromUrl}
+                    disabled={importLoading || !importUrl.trim()}
+                    className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+                  >
+                    {importLoading ? (
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                    ) : "Import"}
+                  </button>
+                </div>
+                {importError && <p className="text-xs text-red-500 mt-1.5">{importError}</p>}
+                <p className="text-xs text-muted mt-1.5">Auto-fills company, role, and location from the job posting.</p>
               </div>
 
               <form onSubmit={createJob} className="space-y-4">
