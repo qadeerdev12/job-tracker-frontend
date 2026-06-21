@@ -7,6 +7,7 @@ import { getTagColor, timeAgo, getWeeklyData } from "../utils/helpers";
 import ThemeToggle from "./ThemeToggle";
 import TagInput from "./TagInput";
 import AITailorTab from "./AITailorTab";
+import DocumentsTab from "./DocumentsTab";
 
 export default function Dashboard() {
   const [jobs, setJobs] = useState([]);
@@ -311,6 +312,7 @@ export default function Dashboard() {
     { id: "dashboard", label: "Dashboard" },
     { id: "applications", label: "Applications" },
     { id: "interviews", label: "Interviews" },
+    { id: "documents", label: "Documents" },
     { id: "archived", label: "Archived" },
     { id: "activity", label: "Activity" },
     { id: "ai", label: "AI Tailor" },
@@ -1118,6 +1120,8 @@ export default function Dashboard() {
         )}
 
         {activeTab === "ai" && <AITailorTab authHeader={authHeader} />}
+
+        {activeTab === "documents" && <DocumentsTab authHeader={authHeader} jobs={jobs} />}
 
         {activeTab === "profile" && (
           <div className="max-w-2xl mx-auto space-y-6">
