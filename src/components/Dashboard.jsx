@@ -42,6 +42,9 @@ export default function Dashboard() {
   const [weeklyGoal, setWeeklyGoal] = useState(10);
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState("10");
+  const [deleteAccountModal, setDeleteAccountModal] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   const [session, setSession] = useState(null);
 
@@ -365,9 +368,13 @@ export default function Dashboard() {
               </button>
               <ThemeToggle />
               <div className="flex items-center gap-2 ml-1">
-                <div className="w-8 h-8 bg-gradient-to-br from-brand-400 to-brand-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                <button
+                  onClick={() => setActiveTab("profile")}
+                  className="w-8 h-8 bg-gradient-to-br from-brand-400 to-brand-600 rounded-full flex items-center justify-center text-white text-xs font-bold hover:ring-2 hover:ring-brand-400/50 transition-all"
+                  title="Profile"
+                >
                   {initials}
-                </div>
+                </button>
                 <button
                   onClick={handleLogout}
                   className="text-xs text-muted hover:text-red-400 transition-colors hidden sm:block"
@@ -1111,6 +1118,64 @@ export default function Dashboard() {
         )}
 
         {activeTab === "ai" && <AITailorTab authHeader={authHeader} />}
+
+        {activeTab === "profile" && (
+          <div className="max-w-2xl mx-auto space-y-6">
+            <h2 className="text-xl font-bold text-heading">Profile</h2>
+
+            <div className="bg-card rounded-2xl border border-line p-6">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-brand-400 to-brand-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                  {initials}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-heading">{userName}</h3>
+                  <p className="text-sm text-muted">{session?.user?.email}</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between py-3 border-t border-line">
+                  <span className="text-sm text-muted">Auth Provider</span>
+                  <span className="text-sm font-medium text-body capitalize">{session?.user?.app_metadata?.provider || "email"}</span>
+                </div>
+                <div className="flex items-center justify-between py-3 border-t border-line">
+                  <span className="text-sm text-muted">Account Created</span>
+                  <span className="text-sm font-medium text-body">{session?.user?.created_at ? new Date(session.user.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "—"}</span>
+                </div>
+                <div className="flex items-center justify-between py-3 border-t border-line">
+                  <span className="text-sm text-muted">Last Sign In</span>
+                  <span className="text-sm font-medium text-body">{session?.user?.last_sign_in_at ? new Date(session.user.last_sign_in_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}</span>
+                </div>
+                <div className="flex items-center justify-between py-3 border-t border-line">
+                  <span className="text-sm text-muted">Total Applications</span>
+                  <span className="text-sm font-medium text-body">{totalApps}</span>
+                </div>
+                <div className="flex items-center justify-between py-3 border-t border-line">
+                  <span className="text-sm text-muted">Archived Applications</span>
+                  <span className="text-sm font-medium text-body">{archivedJobs.length}</span>
+                </div>
+                <div className="flex items-center justify-between py-3 border-t border-line">
+                  <span className="text-sm text-muted">Weekly Goal</span>
+                  <span className="text-sm font-medium text-body">{weeklyGoal} apps/week</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-card rounded-2xl border border-red-500/20 p-6">
+              <h3 className="text-lg font-semibold text-red-400 mb-2">Danger Zone</h3>
+              <p className="text-sm text-muted mb-4">
+                Permanently delete your account and all associated data. This includes all job applications, interview records, activity history, and settings. This action cannot be undone.
+              </p>
+              <button
+                onClick={() => setDeleteAccountModal(true)}
+                className="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Delete Account
+              </button>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Edit Modal */}
@@ -1295,6 +1360,57 @@ export default function Dashboard() {
               </button>
               <button onClick={() => setInterviewModal(null)} className="px-5 py-2.5 border border-line-strong text-body rounded-lg text-sm font-medium hover:bg-page transition-colors">
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Modal */}
+      {deleteAccountModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => { setDeleteAccountModal(false); setDeleteConfirmText(""); }}>
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-red-500/30" onClick={(e) => e.stopPropagation()}>
+            <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-heading text-center mb-1">Delete Your Account?</h3>
+            <p className="text-sm text-body text-center mb-4">
+              This will permanently delete all your data including <span className="font-medium text-heading">{totalApps + archivedJobs.length} applications</span>, interviews, and activity history.
+            </p>
+            <div className="mb-4">
+              <label className="block text-xs font-medium text-body mb-1.5">Type <span className="font-bold text-red-400">DELETE</span> to confirm</label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="DELETE"
+                className={`${inputClass} border-red-500/30 focus:border-red-500 focus:ring-red-500/20`}
+              />
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setDeleteAccountModal(false); setDeleteConfirmText(""); }}
+                className="flex-1 px-4 py-2.5 border border-line-strong text-body rounded-lg text-sm font-medium hover:bg-page transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={deleteConfirmText !== "DELETE" || deletingAccount}
+                onClick={async () => {
+                  setDeletingAccount(true);
+                  try {
+                    await axios.delete(`${API}/api/jobs/account`, authHeader());
+                    await supabase.auth.signOut();
+                  } catch (error) {
+                    console.log(error.response?.data || error.message);
+                    setDeletingAccount(false);
+                  }
+                }}
+                className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                {deletingAccount ? "Deleting..." : "Delete Account"}
               </button>
             </div>
           </div>
