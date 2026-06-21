@@ -1,31 +1,83 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import axios from "axios";
 import { API, inputClass } from "../utils/constants";
 
 export default function AITailorTab({ authHeader }) {
+  const [inputMode, setInputMode] = useState("upload");
   const [resumeText, setResumeText] = useState("");
+  const [resumeFile, setResumeFile] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef(null);
   const [jobDescription, setJobDescription] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [remaining, setRemaining] = useState(null);
 
-  const canAnalyze = resumeText.trim().length >= 20 && jobDescription.trim().length >= 20;
+  const canAnalyze =
+    jobDescription.trim().length >= 20 &&
+    (inputMode === "upload" ? resumeFile !== null : resumeText.trim().length >= 20);
+
+  const allowedTypes = [
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "text/plain",
+  ];
+
+  const handleFileSelect = (file) => {
+    if (!file) return;
+    if (!allowedTypes.includes(file.type) && !file.name.endsWith(".docx") && !file.name.endsWith(".txt")) {
+      setError("Only PDF, DOCX, and TXT files are supported");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("File must be under 5 MB");
+      return;
+    }
+    setError("");
+    setResumeFile(file);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    handleFileSelect(e.dataTransfer.files[0]);
+  };
+
+  const formatSize = (bytes) => {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  };
 
   const handleAnalyze = async () => {
-    if (resumeText.trim().length < 20) {
+    if (jobDescription.trim().length < 20) {
+      setError("Please provide a job description (at least 20 characters)");
+      return;
+    }
+    if (inputMode === "paste" && resumeText.trim().length < 20) {
       setError("Please paste your resume (at least 20 characters)");
       return;
     }
-    if (jobDescription.trim().length < 20) {
-      setError("Please paste a job description (at least 20 characters)");
+    if (inputMode === "upload" && !resumeFile) {
+      setError("Please upload a resume file");
       return;
     }
     setError("");
     setLoading(true);
     setResult(null);
     try {
-      const res = await axios.post(`${API}/api/ai/tailor`, { jobDescription, resumeText }, authHeader());
+      let res;
+      if (inputMode === "upload") {
+        const formData = new FormData();
+        formData.append("resume", resumeFile);
+        formData.append("jobDescription", jobDescription);
+        const headers = authHeader();
+        headers.headers["Content-Type"] = "multipart/form-data";
+        res = await axios.post(`${API}/api/ai/tailor-file`, formData, headers);
+      } else {
+        res = await axios.post(`${API}/api/ai/tailor`, { jobDescription, resumeText }, authHeader());
+      }
       setResult(res.data.result);
       setRemaining(res.data.remaining);
     } catch (err) {
@@ -57,21 +109,104 @@ export default function AITailorTab({ authHeader }) {
             </div>
             <div>
               <h3 className="text-base font-semibold text-heading">AI Resume Tailor</h3>
-              <p className="text-xs text-muted">Paste your resume and a job description to get a personalized gap analysis</p>
+              <p className="text-xs text-muted">Upload your resume and paste a job description to get a personalized gap analysis</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-xs font-medium text-heading mb-1.5">Your Resume</label>
-              <textarea
-                value={resumeText}
-                onChange={(e) => setResumeText(e.target.value)}
-                placeholder="Paste your resume text here..."
-                rows={10}
-                className={`${inputClass} resize-none`}
-              />
-              <p className="text-xs text-muted mt-1">{resumeText.length}/8000</p>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-medium text-heading">Your Resume</label>
+                <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
+                  <button
+                    onClick={() => setInputMode("upload")}
+                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all ${inputMode === "upload" ? "bg-white dark:bg-gray-700 text-heading shadow-sm" : "text-muted hover:text-body"}`}
+                  >
+                    <span className="flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                      Upload
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setInputMode("paste")}
+                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all ${inputMode === "paste" ? "bg-white dark:bg-gray-700 text-heading shadow-sm" : "text-muted hover:text-body"}`}
+                  >
+                    <span className="flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" /></svg>
+                      Paste
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {inputMode === "upload" ? (
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-lg cursor-pointer transition-all flex flex-col items-center justify-center ${
+                    dragOver
+                      ? "border-brand-500 bg-brand-50/50 dark:bg-brand-900/20"
+                      : resumeFile
+                        ? "border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-900/10"
+                        : "border-line hover:border-brand-400 hover:bg-brand-50/30 dark:hover:bg-brand-900/10"
+                  }`}
+                  style={{ minHeight: "15.5rem" }}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.docx,.txt"
+                    className="hidden"
+                    onChange={(e) => handleFileSelect(e.target.files[0])}
+                  />
+                  {resumeFile ? (
+                    <div className="flex flex-col items-center gap-2 p-4">
+                      <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
+                        <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-heading truncate max-w-[220px]">{resumeFile.name}</p>
+                        <p className="text-xs text-muted mt-0.5">{formatSize(resumeFile.size)}</p>
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setResumeFile(null); }}
+                        className="text-xs text-red-500 hover:text-red-600 font-medium mt-1"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 p-4">
+                      <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
+                        <svg className="w-6 h-6 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-heading">Drop your resume here</p>
+                        <p className="text-xs text-muted mt-0.5">or click to browse</p>
+                      </div>
+                      <div className="flex gap-2 mt-1">
+                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs text-muted">PDF</span>
+                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs text-muted">DOCX</span>
+                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs text-muted">TXT</span>
+                      </div>
+                      <p className="text-xs text-muted">Max 5 MB</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <textarea
+                    value={resumeText}
+                    onChange={(e) => setResumeText(e.target.value)}
+                    placeholder="Paste your resume text here..."
+                    rows={10}
+                    className={`${inputClass} resize-none`}
+                  />
+                  <p className="text-xs text-muted mt-1">{resumeText.length}/8000</p>
+                </>
+              )}
             </div>
             <div>
               <label className="block text-xs font-medium text-heading mb-1.5">Job Description</label>
