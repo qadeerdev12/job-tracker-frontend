@@ -52,6 +52,9 @@ export default function Dashboard() {
   const [importUrl, setImportUrl] = useState("");
   const [importLoading, setImportLoading] = useState(false);
   const [importError, setImportError] = useState("");
+  const [showPasteBox, setShowPasteBox] = useState(false);
+  const [pasteText, setPasteText] = useState("");
+  const [pasteLoading, setPasteLoading] = useState(false);
   const [formContacts, setFormContacts] = useState([]);
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactInput, setContactInput] = useState({ name: "", role: "", email: "", phone: "", linkedin: "", notes: "" });
@@ -188,6 +191,7 @@ export default function Dashboard() {
     if (!importUrl.trim()) return;
     setImportLoading(true);
     setImportError("");
+    setShowPasteBox(false);
     try {
       const res = await axios.post(`${API}/api/jobs/scrape-job`, { url: importUrl.trim() }, authHeader());
       const { company: c, role: r, location, link: l } = res.data;
@@ -197,9 +201,36 @@ export default function Dashboard() {
       if (location) setNotes(location);
       setImportUrl("");
     } catch (error) {
-      setImportError(error.response?.data?.message || "Could not extract job details from this URL");
+      if (error.response?.data?.blocked) {
+        setShowPasteBox(true);
+        setLink(importUrl.trim());
+        setImportError("");
+      } else {
+        setImportError(error.response?.data?.message || "Could not extract job details from this URL");
+      }
     } finally {
       setImportLoading(false);
+    }
+  };
+
+  const importFromText = async () => {
+    if (!pasteText.trim() || pasteText.trim().length < 20) return;
+    setPasteLoading(true);
+    setImportError("");
+    try {
+      const res = await axios.post(`${API}/api/jobs/parse-job-text`, { text: pasteText.trim(), url: importUrl.trim() || link }, authHeader());
+      const { company: c, role: r, location, link: l } = res.data;
+      if (c) setCompany(c);
+      if (r) setRole(r);
+      if (l) setLink(l);
+      if (location) setNotes(location);
+      setImportUrl("");
+      setPasteText("");
+      setShowPasteBox(false);
+    } catch (error) {
+      setImportError(error.response?.data?.message || "Could not extract job details from the text");
+    } finally {
+      setPasteLoading(false);
     }
   };
 
@@ -818,7 +849,38 @@ export default function Dashboard() {
                   </button>
                 </div>
                 {importError && <p className="text-xs text-red-500 mt-1.5">{importError}</p>}
-                <p className="text-xs text-muted mt-1.5">Auto-fills company, role, and location from the job posting.</p>
+
+                {showPasteBox ? (
+                  <div className="mt-2 border border-amber-300 dark:border-amber-600/40 bg-amber-50 dark:bg-amber-900/10 rounded-lg p-3 space-y-2">
+                    <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">This site blocked auto-extraction. Copy the job title, company, and location from the page and paste below:</p>
+                    <textarea
+                      value={pasteText}
+                      onChange={(e) => setPasteText(e.target.value)}
+                      placeholder="Paste the job title, company name, location, or the full job description here..."
+                      rows={4}
+                      className={`${inputClass} resize-none !text-xs`}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={importFromText}
+                        disabled={pasteLoading || pasteText.trim().length < 20}
+                        className="px-4 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-xs font-medium transition-colors"
+                      >
+                        {pasteLoading ? "Extracting..." : "Extract Details"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowPasteBox(false); setPasteText(""); }}
+                        className="px-4 py-2 border border-line-strong text-body rounded-lg text-xs font-medium hover:bg-page transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted mt-1.5">Auto-fills company, role, and location from the job posting.</p>
+                )}
               </div>
 
               <form onSubmit={createJob} className="space-y-4">
