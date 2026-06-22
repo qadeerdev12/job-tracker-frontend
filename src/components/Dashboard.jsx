@@ -234,7 +234,7 @@ export default function Dashboard() {
     await supabase.auth.signOut();
   };
 
-  const filteredJobs = jobs
+  const filteredJobs = useMemo(() => jobs
     .filter((job) => {
       const matchesSearch =
         job.company.toLowerCase().includes(search.toLowerCase()) ||
@@ -252,11 +252,11 @@ export default function Dashboard() {
         return order[a.status] - order[b.status];
       }
       return 0;
-    });
+    }), [jobs, search, filterStatus, filterTag, sortBy]);
 
-  const recentActivity = [...jobs]
+  const recentActivity = useMemo(() => [...jobs]
     .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
-    .slice(0, 5);
+    .slice(0, 5), [jobs]);
 
   const weeklyData = useMemo(() => getWeeklyData(jobs), [jobs]);
 
