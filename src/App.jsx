@@ -1,9 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { supabase } from "./lib/supabase";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import LandingPage from "./pages/LandingPage";
-import Dashboard from "./components/Dashboard";
+
+const Dashboard = lazy(() => import("./components/Dashboard"));
+
+const LoadingScreen = () => (
+  <div className="min-h-screen bg-page flex items-center justify-center">
+    <div className="text-brand-600 text-lg font-semibold">Loading...</div>
+  </div>
+);
 
 function App() {
   const [session, setSession] = useState(null);
@@ -26,13 +33,13 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  if (loading) return (
-    <div className="min-h-screen bg-page flex items-center justify-center">
-      <div className="text-brand-600 text-lg font-semibold">Loading...</div>
-    </div>
-  );
+  if (loading) return <LoadingScreen />;
 
-  if (session) return <Dashboard />;
+  if (session) return (
+    <Suspense fallback={<LoadingScreen />}>
+      <Dashboard />
+    </Suspense>
+  );
 
   if (page === "landing") return <LandingPage setPage={setPage} />;
   if (page === "register") return <Register setPage={setPage} />;

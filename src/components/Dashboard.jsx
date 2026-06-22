@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import axios from "axios";
 import { PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { supabase } from "../lib/supabase";
@@ -6,8 +6,9 @@ import { API, STATUS_STYLES, CHART_COLORS_LIGHT, CHART_COLORS_DARK, inputClass }
 import { getTagColor, timeAgo, getWeeklyData } from "../utils/helpers";
 import ThemeToggle from "./ThemeToggle";
 import TagInput from "./TagInput";
-import AITailorTab from "./AITailorTab";
-import DocumentsTab from "./DocumentsTab";
+
+const AITailorTab = lazy(() => import("./AITailorTab"));
+const DocumentsTab = lazy(() => import("./DocumentsTab"));
 import { SummaryCardsSkeleton, GoalRingSkeleton, ChartsSkeleton, AnalyticsSkeleton, JobListSkeleton, ActivitySkeleton } from "./Skeletons";
 import { useToast, ToastContainer } from "./Toast";
 import OnboardingTour from "./OnboardingTour";
@@ -1323,9 +1324,9 @@ export default function Dashboard() {
           </>
         )}
 
-        {activeTab === "ai" && <AITailorTab authHeader={authHeader} />}
+        {activeTab === "ai" && <Suspense fallback={<div className="text-center py-12 text-muted">Loading AI Tailor...</div>}><AITailorTab authHeader={authHeader} /></Suspense>}
 
-        {activeTab === "documents" && <DocumentsTab authHeader={authHeader} jobs={jobs} />}
+        {activeTab === "documents" && <Suspense fallback={<div className="text-center py-12 text-muted">Loading Documents...</div>}><DocumentsTab authHeader={authHeader} jobs={jobs} /></Suspense>}
 
         {activeTab === "profile" && (
           <div className="max-w-2xl mx-auto space-y-6">
