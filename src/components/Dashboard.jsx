@@ -9,6 +9,7 @@ import TagInput from "./TagInput";
 import AITailorTab from "./AITailorTab";
 import DocumentsTab from "./DocumentsTab";
 import { SummaryCardsSkeleton, GoalRingSkeleton, ChartsSkeleton, AnalyticsSkeleton, JobListSkeleton, ActivitySkeleton } from "./Skeletons";
+import { useToast, ToastContainer } from "./Toast";
 
 export default function Dashboard() {
   const [jobs, setJobs] = useState([]);
@@ -28,6 +29,7 @@ export default function Dashboard() {
   const [allTags, setAllTags] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { toasts, toast } = useToast();
 
   const [archivedJobs, setArchivedJobs] = useState([]);
   const [activities, setActivities] = useState([]);
@@ -179,8 +181,9 @@ export default function Dashboard() {
       setShowContactForm(false);
       setContactInput({ name: "", role: "", email: "", phone: "", linkedin: "", notes: "" });
       setActiveTab("applications");
+      toast("Application added successfully");
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Failed to add application");
     }
   };
 
@@ -193,8 +196,9 @@ export default function Dashboard() {
       fetchArchivedJobs();
       fetchActivities();
       setDeleteTarget(null);
+      toast("Application deleted");
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Failed to delete application");
     }
   };
 
@@ -205,8 +209,9 @@ export default function Dashboard() {
       fetchStats();
       fetchActivities();
       setEditJob(null);
+      toast(data.status ? `Status updated to ${data.status}` : "Application updated");
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Failed to update application");
     }
   };
 
@@ -217,8 +222,9 @@ export default function Dashboard() {
       fetchStats();
       fetchArchivedJobs();
       fetchActivities();
+      toast(archive ? "Application archived" : "Application restored");
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Failed to archive application");
     }
   };
 
@@ -920,8 +926,9 @@ export default function Dashboard() {
                       a.download = "tailortrack-export.csv";
                       a.click();
                       window.URL.revokeObjectURL(url);
+                      toast("CSV exported successfully");
                     } catch (error) {
-                      console.log(error.response?.data || error.message);
+                      toast.error("Failed to export CSV");
                     }
                   }}
                   className="flex items-center gap-1.5 px-3 py-2.5 border border-line-strong bg-input-bg rounded-lg text-sm text-body hover:text-heading transition-all shrink-0"
@@ -1643,6 +1650,8 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      <ToastContainer toasts={toasts} />
     </div>
   );
 }
