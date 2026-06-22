@@ -10,6 +10,7 @@ import AITailorTab from "./AITailorTab";
 import DocumentsTab from "./DocumentsTab";
 import { SummaryCardsSkeleton, GoalRingSkeleton, ChartsSkeleton, AnalyticsSkeleton, JobListSkeleton, ActivitySkeleton } from "./Skeletons";
 import { useToast, ToastContainer } from "./Toast";
+import OnboardingTour from "./OnboardingTour";
 
 export default function Dashboard() {
   const [jobs, setJobs] = useState([]);
@@ -380,14 +381,14 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" data-tour="welcome">
                 <div className="w-7 h-7 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20L17.5 6.5" stroke="currentColor" strokeWidth={2.5} /><path d="M17.5 6.5l2.5-2.5" stroke="currentColor" strokeWidth={1.5} /><circle cx="20" cy="4" r="1.5" fill="currentColor" /><path d="M4 20c0 0-1 -5 3-9" stroke="currentColor" strokeWidth={1.8} /><path d="M4 20c0 0 5 1 9-3" stroke="currentColor" strokeWidth={1.8} /></svg>
                 </div>
                 <span className="text-lg font-bold text-brand-400 tracking-tight">TailorTrack</span>
               </div>
 
-              <div className="hidden md:flex items-center gap-1">
+              <div className="hidden md:flex items-center gap-1" data-tour="nav-tabs">
                 {navItems.map((item) => (
                   <button
                     key={item.id}
@@ -408,11 +409,12 @@ export default function Dashboard() {
               <button
                 onClick={() => setActiveTab("add")}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition-colors"
+                data-tour="add-job-btn"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                 <span className="hidden sm:inline">Add</span>
               </button>
-              <ThemeToggle />
+              <span data-tour="theme-toggle"><ThemeToggle /></span>
               <div className="flex items-center gap-2 ml-1">
                 <button
                   onClick={() => setActiveTab("profile")}
@@ -472,7 +474,7 @@ export default function Dashboard() {
               <h1 className="text-2xl sm:text-3xl font-bold text-heading mb-6">{firstName}'s Summary</h1>
 
               {loading ? <SummaryCardsSkeleton /> : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4" data-tour="summary-cards">
                   {summaryStats.map((stat) => (
                     <div key={stat.label} className="bg-page rounded-xl p-4 border border-line">
                       <p className="text-[11px] font-semibold text-muted tracking-wider mb-1">{stat.label}</p>
@@ -484,7 +486,7 @@ export default function Dashboard() {
             </div>
 
             {/* Weekly Goal Ring */}
-            {loading ? <GoalRingSkeleton /> : <div className="flex flex-col items-center shrink-0">
+            {loading ? <GoalRingSkeleton /> : <div className="flex flex-col items-center shrink-0" data-tour="weekly-goal">
               <p className="text-[11px] font-semibold text-muted tracking-wider mb-3">WEEKLY GOAL</p>
               <div className="relative w-28 h-28">
                 <svg className="w-28 h-28 -rotate-90" viewBox="0 0 120 120">
@@ -559,7 +561,7 @@ export default function Dashboard() {
         {activeTab === "dashboard" && (
           <div className="space-y-6">
             {/* Charts Row */}
-            {loading ? <ChartsSkeleton /> : <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {loading ? <ChartsSkeleton /> : <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-tour="charts">
               <div className="bg-card rounded-2xl border border-line p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-heading">Status Breakdown</h3>
@@ -1779,6 +1781,7 @@ export default function Dashboard() {
       )}
 
       <ToastContainer toasts={toasts} />
+      <OnboardingTour loading={loading} />
 
       {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-line md:hidden z-40 safe-bottom">
