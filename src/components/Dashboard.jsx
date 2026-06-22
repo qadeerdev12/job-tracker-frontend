@@ -8,6 +8,7 @@ import ThemeToggle from "./ThemeToggle";
 import TagInput from "./TagInput";
 import AITailorTab from "./AITailorTab";
 import DocumentsTab from "./DocumentsTab";
+import { SummaryCardsSkeleton, GoalRingSkeleton, ChartsSkeleton, AnalyticsSkeleton, JobListSkeleton, ActivitySkeleton } from "./Skeletons";
 
 export default function Dashboard() {
   const [jobs, setJobs] = useState([]);
@@ -26,6 +27,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [allTags, setAllTags] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [archivedJobs, setArchivedJobs] = useState([]);
   const [activities, setActivities] = useState([]);
@@ -145,14 +147,17 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!session) return;
-    fetchJobs();
-    fetchStats();
-    fetchTags();
-    fetchArchivedJobs();
-    fetchActivities();
-    fetchReminders();
-    fetchInterviews();
-    fetchSettings();
+    setLoading(true);
+    Promise.all([
+      fetchJobs(),
+      fetchStats(),
+      fetchTags(),
+      fetchArchivedJobs(),
+      fetchActivities(),
+      fetchReminders(),
+      fetchInterviews(),
+      fetchSettings(),
+    ]).finally(() => setLoading(false));
   }, [session]);
 
   const createJob = async (e) => {
@@ -428,18 +433,20 @@ export default function Dashboard() {
               <p className="text-sm text-muted mb-1">{dateStr}</p>
               <h1 className="text-2xl sm:text-3xl font-bold text-heading mb-6">{firstName}'s Summary</h1>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-                {summaryStats.map((stat) => (
-                  <div key={stat.label} className="bg-page rounded-xl p-4 border border-line">
-                    <p className="text-[11px] font-semibold text-muted tracking-wider mb-1">{stat.label}</p>
-                    <p className={`text-2xl sm:text-3xl font-bold ${stat.color}`}>{stat.count}</p>
-                  </div>
-                ))}
-              </div>
+              {loading ? <SummaryCardsSkeleton /> : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                  {summaryStats.map((stat) => (
+                    <div key={stat.label} className="bg-page rounded-xl p-4 border border-line">
+                      <p className="text-[11px] font-semibold text-muted tracking-wider mb-1">{stat.label}</p>
+                      <p className={`text-2xl sm:text-3xl font-bold ${stat.color}`}>{stat.count}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Weekly Goal Ring */}
-            <div className="flex flex-col items-center shrink-0">
+            {loading ? <GoalRingSkeleton /> : <div className="flex flex-col items-center shrink-0">
               <p className="text-[11px] font-semibold text-muted tracking-wider mb-3">WEEKLY GOAL</p>
               <div className="relative w-28 h-28">
                 <svg className="w-28 h-28 -rotate-90" viewBox="0 0 120 120">
@@ -503,7 +510,7 @@ export default function Dashboard() {
                   Edit goal
                 </button>
               )}
-            </div>
+            </div>}
           </div>
         </div>
       </div>
@@ -514,7 +521,7 @@ export default function Dashboard() {
         {activeTab === "dashboard" && (
           <div className="space-y-6">
             {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {loading ? <ChartsSkeleton /> : <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-card rounded-2xl border border-line p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-heading">Status Breakdown</h3>
@@ -548,10 +555,10 @@ export default function Dashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-            </div>
+            </div>}
 
             {/* Analytics Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {loading ? <AnalyticsSkeleton /> : <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-card rounded-2xl border border-line p-5">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
@@ -593,7 +600,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-            </div>
+            </div>}
 
             {/* Monthly + Funnel Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -925,7 +932,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {filteredJobs.length === 0 ? (
+            {loading ? <JobListSkeleton /> : filteredJobs.length === 0 ? (
               <div className="bg-card rounded-2xl border border-line p-12 text-center">
                 <svg className="w-12 h-12 text-faint mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                 <p className="text-body font-medium">No applications found</p>
