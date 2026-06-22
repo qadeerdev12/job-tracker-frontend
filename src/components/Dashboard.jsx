@@ -166,14 +166,19 @@ export default function Dashboard() {
     return () => controller.abort();
   }, [session]);
 
+  const refreshStats = () => {
+    fetchStats();
+    fetchActivities();
+  };
+
   const createJob = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API}/api/jobs`, { company, role, status, link, notes, tags: formTags, followUpDate: followUpDate || null, contacts: formContacts }, authHeader());
-      fetchJobs();
-      fetchStats();
-      fetchTags();
-      fetchActivities();
+      const res = await axios.post(`${API}/api/jobs`, { company, role, status, link, notes, tags: formTags, followUpDate: followUpDate || null, contacts: formContacts }, authHeader());
+      setJobs((prev) => [res.data, ...prev]);
+      const newTags = formTags.filter((t) => !allTags.includes(t));
+      if (newTags.length) setAllTags((prev) => [...prev, ...newTags]);
+      refreshStats();
       setCompany("");
       setRole("");
       setStatus("Applied");
@@ -194,11 +199,9 @@ export default function Dashboard() {
   const deleteJob = async (jobId) => {
     try {
       await axios.delete(`${API}/api/jobs/${jobId}`, authHeader());
-      fetchJobs();
-      fetchStats();
-      fetchTags();
-      fetchArchivedJobs();
-      fetchActivities();
+      setJobs((prev) => prev.filter((j) => j._id !== jobId));
+      setArchivedJobs((prev) => prev.filter((j) => j._id !== jobId));
+      refreshStats();
       setDeleteTarget(null);
       toast("Application deleted");
     } catch (error) {
@@ -208,10 +211,9 @@ export default function Dashboard() {
 
   const updateJob = async (jobId, data) => {
     try {
-      await axios.put(`${API}/api/jobs/${jobId}`, data, authHeader());
-      fetchJobs();
-      fetchStats();
-      fetchActivities();
+      const res = await axios.put(`${API}/api/jobs/${jobId}`, data, authHeader());
+      setJobs((prev) => prev.map((j) => j._id === jobId ? res.data : j));
+      refreshStats();
       setEditJob(null);
       toast(data.status ? `Status updated to ${data.status}` : "Application updated");
     } catch (error) {
@@ -221,11 +223,15 @@ export default function Dashboard() {
 
   const archiveJob = async (jobId, archive) => {
     try {
-      await axios.put(`${API}/api/jobs/${jobId}`, { archived: archive }, authHeader());
-      fetchJobs();
-      fetchStats();
-      fetchArchivedJobs();
-      fetchActivities();
+      const res = await axios.put(`${API}/api/jobs/${jobId}`, { archived: archive }, authHeader());
+      if (archive) {
+        setJobs((prev) => prev.filter((j) => j._id !== jobId));
+        setArchivedJobs((prev) => [res.data, ...prev]);
+      } else {
+        setArchivedJobs((prev) => prev.filter((j) => j._id !== jobId));
+        setJobs((prev) => [res.data, ...prev]);
+      }
+      refreshStats();
       toast(archive ? "Application archived" : "Application restored");
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to archive application");
