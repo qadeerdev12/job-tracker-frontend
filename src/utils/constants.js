@@ -1,4 +1,4 @@
-export const API = "https://job-tracker-backend-s1fc.onrender.com";
+export const API = import.meta.env.VITE_API_URL || "https://job-tracker-backend-s1fc.onrender.com";
 
 export const STATUS_STYLES = {
   Applied: { badge: "bg-brand-100 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400", btn: "bg-brand-50 text-brand-600 hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-400 dark:hover:bg-brand-500/20", dot: "bg-brand-500" },
