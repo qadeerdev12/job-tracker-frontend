@@ -75,93 +75,95 @@ export default function Dashboard() {
     headers: { Authorization: `Bearer ${session?.access_token}` },
   });
 
-  const fetchJobs = async () => {
+  const fetchJobs = async (signal) => {
     try {
-      const res = await axios.get(`${API}/api/jobs`, authHeader());
+      const res = await axios.get(`${API}/api/jobs`, { ...authHeader(), signal });
       setJobs(res.data);
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      if (!axios.isCancel(error)) console.log(error.response?.data || error.message);
     }
   };
 
-  const fetchStats = async () => {
+  const fetchStats = async (signal) => {
     try {
-      const res = await axios.get(`${API}/api/jobs/stats`, authHeader());
+      const res = await axios.get(`${API}/api/jobs/stats`, { ...authHeader(), signal });
       setStats(res.data);
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      if (!axios.isCancel(error)) console.log(error.response?.data || error.message);
     }
   };
 
-  const fetchTags = async () => {
+  const fetchTags = async (signal) => {
     try {
-      const res = await axios.get(`${API}/api/jobs/tags`, authHeader());
+      const res = await axios.get(`${API}/api/jobs/tags`, { ...authHeader(), signal });
       setAllTags(res.data);
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      if (!axios.isCancel(error)) console.log(error.response?.data || error.message);
     }
   };
 
-  const fetchActivities = async () => {
+  const fetchActivities = async (signal) => {
     try {
-      const res = await axios.get(`${API}/api/jobs/activities`, authHeader());
+      const res = await axios.get(`${API}/api/jobs/activities`, { ...authHeader(), signal });
       setActivities(res.data);
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      if (!axios.isCancel(error)) console.log(error.response?.data || error.message);
     }
   };
 
-  const fetchReminders = async () => {
+  const fetchReminders = async (signal) => {
     try {
-      const res = await axios.get(`${API}/api/jobs/reminders`, authHeader());
+      const res = await axios.get(`${API}/api/jobs/reminders`, { ...authHeader(), signal });
       setReminders(res.data);
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      if (!axios.isCancel(error)) console.log(error.response?.data || error.message);
     }
   };
 
-  const fetchArchivedJobs = async () => {
+  const fetchArchivedJobs = async (signal) => {
     try {
-      const res = await axios.get(`${API}/api/jobs?archived=true`, authHeader());
+      const res = await axios.get(`${API}/api/jobs?archived=true`, { ...authHeader(), signal });
       setArchivedJobs(res.data);
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      if (!axios.isCancel(error)) console.log(error.response?.data || error.message);
     }
   };
 
-  const fetchInterviews = async () => {
+  const fetchInterviews = async (signal) => {
     try {
-      const res = await axios.get(`${API}/api/jobs/interviews`, authHeader());
+      const res = await axios.get(`${API}/api/jobs/interviews`, { ...authHeader(), signal });
       setUpcomingInterviews(res.data);
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      if (!axios.isCancel(error)) console.log(error.response?.data || error.message);
     }
   };
 
-  const fetchSettings = async () => {
+  const fetchSettings = async (signal) => {
     try {
-      const res = await axios.get(`${API}/api/jobs/settings`, authHeader());
+      const res = await axios.get(`${API}/api/jobs/settings`, { ...authHeader(), signal });
       setWeeklyGoal(res.data.weeklyGoal);
       setGoalInput(String(res.data.weeklyGoal));
       if (res.data.emailNotifications !== undefined) setEmailNotifications(res.data.emailNotifications);
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      if (!axios.isCancel(error)) console.log(error.response?.data || error.message);
     }
   };
 
   useEffect(() => {
     if (!session) return;
+    const controller = new AbortController();
     setLoading(true);
     Promise.all([
-      fetchJobs(),
-      fetchStats(),
-      fetchTags(),
-      fetchArchivedJobs(),
-      fetchActivities(),
-      fetchReminders(),
-      fetchInterviews(),
-      fetchSettings(),
+      fetchJobs(controller.signal),
+      fetchStats(controller.signal),
+      fetchTags(controller.signal),
+      fetchArchivedJobs(controller.signal),
+      fetchActivities(controller.signal),
+      fetchReminders(controller.signal),
+      fetchInterviews(controller.signal),
+      fetchSettings(controller.signal),
     ]).finally(() => setLoading(false));
+    return () => controller.abort();
   }, [session]);
 
   const createJob = async (e) => {
