@@ -684,7 +684,7 @@ export default function Dashboard() {
                         }`}>
                           {isOverdue ? `Overdue ${Math.abs(diffDays)}d` : isToday ? "Due today" : `In ${diffDays}d`}
                         </span>
-                        <span className="text-xs text-muted shrink-0">
+                        <span className="text-xs text-muted shrink-0 hidden sm:block">
                           {new Date(job.followUpDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </span>
                       </div>
@@ -714,7 +714,7 @@ export default function Dashboard() {
                       <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_STYLES[job.status]?.badge || "bg-gray-100 text-body"}`}>
                         {job.status}
                       </span>
-                      <span className="text-xs text-muted shrink-0 w-20 text-right">
+                      <span className="text-xs text-muted shrink-0 w-20 text-right hidden sm:block">
                         {timeAgo(job.updatedAt || job.createdAt)}
                       </span>
                     </div>
@@ -883,9 +883,9 @@ export default function Dashboard() {
 
         {activeTab === "applications" && (
           <>
-            <div className="bg-card rounded-2xl border border-line p-4 mb-6">
-              <div className="flex flex-wrap gap-3">
-                <div className="relative flex-1 min-w-[200px]">
+            <div className="bg-card rounded-2xl border border-line p-3 sm:p-4 mb-6">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
+                <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
                   <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                   <input
                     type="text"
@@ -895,7 +895,8 @@ export default function Dashboard() {
                     className="w-full pl-10 pr-4 py-2.5 border border-line-strong bg-input-bg rounded-lg text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 focus:bg-card outline-none transition-all"
                   />
                 </div>
-                <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className={`${inputClass} w-auto min-w-[130px]`}>
+                <div className="flex gap-2 sm:contents overflow-x-auto">
+                <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className={`${inputClass} w-full sm:w-auto min-w-0 sm:min-w-[130px]`}>
                   <option value="All">All Statuses</option>
                   <option value="Applied">Applied</option>
                   <option value="Interview">Interview</option>
@@ -903,19 +904,20 @@ export default function Dashboard() {
                   <option value="Rejected">Rejected</option>
                 </select>
                 {allTags.length > 0 && (
-                  <select value={filterTag} onChange={(e) => setFilterTag(e.target.value)} className={`${inputClass} w-auto min-w-[120px]`}>
+                  <select value={filterTag} onChange={(e) => setFilterTag(e.target.value)} className={`${inputClass} w-full sm:w-auto min-w-0 sm:min-w-[120px]`}>
                     <option value="All">All Tags</option>
                     {allTags.map((tag) => (
                       <option key={tag} value={tag}>{tag}</option>
                     ))}
                   </select>
                 )}
-                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className={`${inputClass} w-auto min-w-[130px]`}>
+                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className={`${inputClass} w-full sm:w-auto min-w-0 sm:min-w-[130px]`}>
                   <option value="newest">Newest First</option>
                   <option value="oldest">Oldest First</option>
                   <option value="company">Company A-Z</option>
                   <option value="status">By Status</option>
                 </select>
+                </div>
                 <button
                   onClick={async () => {
                     try {
@@ -1362,8 +1364,8 @@ export default function Dashboard() {
 
       {/* Edit Modal */}
       {editJob && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setEditJob(null)}>
-          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-md p-6 border border-line-strong" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={() => setEditJob(null)}>
+          <div className="bg-card rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-6 border border-line-strong max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-semibold text-heading">Edit Application</h3>
               <button onClick={() => setEditJob(null)} className="p-1 text-muted hover:text-body rounded-lg hover:bg-page">
@@ -1476,8 +1478,8 @@ export default function Dashboard() {
 
       {/* Delete Modal */}
       {deleteTarget && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setDeleteTarget(null)}>
-          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center border border-line-strong" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={() => setDeleteTarget(null)}>
+          <div className="bg-card rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center border border-line-strong" onClick={(e) => e.stopPropagation()}>
             <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
@@ -1500,8 +1502,8 @@ export default function Dashboard() {
       )}
       {/* Interview Schedule Modal */}
       {interviewModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setInterviewModal(null)}>
-          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-md p-6 border border-line-strong" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={() => setInterviewModal(null)}>
+          <div className="bg-card rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-6 border border-line-strong max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-semibold text-heading">Schedule Interview</h3>
               <button onClick={() => setInterviewModal(null)} className="p-1 text-muted hover:text-body rounded-lg hover:bg-page">
@@ -1602,8 +1604,8 @@ export default function Dashboard() {
 
       {/* Delete Account Modal */}
       {deleteAccountModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => { setDeleteAccountModal(false); setDeleteConfirmText(""); }}>
-          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-red-500/30" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={() => { setDeleteAccountModal(false); setDeleteConfirmText(""); }}>
+          <div className="bg-card rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-5 sm:p-6 border border-red-500/30" onClick={(e) => e.stopPropagation()}>
             <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
@@ -1652,6 +1654,33 @@ export default function Dashboard() {
       )}
 
       <ToastContainer toasts={toasts} />
+
+      {/* Mobile Bottom Nav */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-line md:hidden z-40 safe-bottom">
+        <div className="flex justify-around items-center h-14">
+          {[
+            { id: "dashboard", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>, label: "Home" },
+            { id: "applications", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>, label: "Jobs" },
+            { id: "add", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>, label: "Add" },
+            { id: "ai", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" /></svg>, label: "AI" },
+            { id: "profile", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>, label: "Profile" },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${
+                activeTab === item.id ? "text-brand-400" : "text-muted"
+              }`}
+            >
+              {item.icon}
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
+
+      {/* Bottom nav spacer for mobile */}
+      <div className="h-14 md:hidden" />
     </div>
   );
 }
