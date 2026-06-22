@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import { PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { supabase } from "../lib/supabase";
 import { API, STATUS_STYLES, CHART_COLORS_LIGHT, CHART_COLORS_DARK, inputClass } from "../utils/constants";
 import { getTagColor, timeAgo, getWeeklyData } from "../utils/helpers";
@@ -289,13 +289,45 @@ export default function Dashboard() {
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
-      const count = jobs.filter((j) => {
+      const inMonth = jobs.filter((j) => {
         const c = new Date(j.createdAt);
         return c >= d && c <= end;
-      }).length;
-      months.push({ month: d.toLocaleDateString("en-US", { month: "short" }), count });
+      });
+      months.push({
+        month: d.toLocaleDateString("en-US", { month: "short" }),
+        count: inMonth.length,
+        Applied: inMonth.filter((j) => j.status === "Applied").length,
+        Interview: inMonth.filter((j) => j.status === "Interview").length,
+        Offer: inMonth.filter((j) => j.status === "Offer").length,
+        Rejected: inMonth.filter((j) => j.status === "Rejected").length,
+      });
     }
     return months;
+  }, [jobs]);
+
+  const stageMetrics = useMemo(() => {
+    const daysBetween = (a, b) => Math.max(0, Math.ceil((new Date(b) - new Date(a)) / 86400000));
+    const results = { toInterview: [], toOffer: [], toRejected: [], pipeline: [] };
+    jobs.forEach((j) => {
+      if (!j.timeline || j.timeline.length < 2) return;
+      const sorted = [...j.timeline].sort((a, b) => new Date(a.date) - new Date(b.date));
+      const appliedEntry = sorted.find((t) => t.status === "Applied");
+      const interviewEntry = sorted.find((t) => t.status === "Interview");
+      const offerEntry = sorted.find((t) => t.status === "Offer");
+      const rejectedEntry = sorted.find((t) => t.status === "Rejected");
+      if (appliedEntry && interviewEntry) results.toInterview.push(daysBetween(appliedEntry.date, interviewEntry.date));
+      if (interviewEntry && offerEntry) results.toOffer.push(daysBetween(interviewEntry.date, offerEntry.date));
+      if (appliedEntry && rejectedEntry) results.toRejected.push(daysBetween(appliedEntry.date, rejectedEntry.date));
+      if (appliedEntry && offerEntry) results.pipeline.push(daysBetween(appliedEntry.date, offerEntry.date));
+    });
+    const avg = (arr) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : null;
+    return {
+      toInterview: avg(results.toInterview),
+      toOffer: avg(results.toOffer),
+      toRejected: avg(results.toRejected),
+      pipeline: avg(results.pipeline),
+      counts: { toInterview: results.toInterview.length, toOffer: results.toOffer.length, toRejected: results.toRejected.length, pipeline: results.pipeline.length },
+    };
   }, [jobs]);
 
   const funnelData = useMemo(() => {
@@ -563,7 +595,7 @@ export default function Dashboard() {
               </div>
             </div>}
 
-            {/* Analytics Row */}
+            {/* Conversion Metrics */}
             {loading ? <AnalyticsSkeleton /> : <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-card rounded-2xl border border-line p-5">
                 <div className="flex items-center gap-3 mb-2">
@@ -608,46 +640,139 @@ export default function Dashboard() {
               </div>
             </div>}
 
-            {/* Monthly + Funnel Row */}
+            {/* Time-in-Stage Metrics */}
+            <div className="bg-card rounded-2xl border border-line p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-sm font-semibold text-heading flex items-center gap-2">
+                  <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  Time in Pipeline
+                </h3>
+                <span className="text-xs text-muted">Based on timeline data</span>
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { label: "Applied → Interview", value: stageMetrics.toInterview, count: stageMetrics.counts.toInterview, color: "bg-indigo-500", bgColor: "bg-indigo-500/10", textColor: "text-indigo-400" },
+                  { label: "Interview → Offer", value: stageMetrics.toOffer, count: stageMetrics.counts.toOffer, color: "bg-emerald-500", bgColor: "bg-emerald-500/10", textColor: "text-emerald-400" },
+                  { label: "Applied → Rejected", value: stageMetrics.toRejected, count: stageMetrics.counts.toRejected, color: "bg-red-500", bgColor: "bg-red-500/10", textColor: "text-red-400" },
+                  { label: "Full Pipeline", value: stageMetrics.pipeline, count: stageMetrics.counts.pipeline, color: "bg-violet-500", bgColor: "bg-violet-500/10", textColor: "text-violet-400" },
+                ].map((m) => (
+                  <div key={m.label} className="bg-page rounded-xl p-4 border border-line">
+                    <p className="text-[11px] font-medium text-muted mb-1 truncate">{m.label}</p>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className={`text-2xl font-bold ${m.textColor}`}>{m.value !== null ? m.value : "—"}</span>
+                      {m.value !== null && <span className="text-xs text-muted">days</span>}
+                    </div>
+                    <p className="text-[10px] text-muted mt-1">{m.count} application{m.count !== 1 ? "s" : ""}</p>
+                    {m.value !== null && (
+                      <div className={`w-full ${m.bgColor} rounded-full h-1 mt-2`}>
+                        <div className={`${m.color} h-1 rounded-full transition-all duration-500`} style={{ width: `${Math.min(100, (m.value / 60) * 100)}%` }} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Monthly Trends + Funnel Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-card rounded-2xl border border-line p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-heading">Monthly Trend</h3>
-                  <span className="text-xs text-muted">Last 6 months</span>
+                  <h3 className="text-sm font-semibold text-heading">Monthly Trends</h3>
+                  <div className="flex items-center gap-3">
+                    {[
+                      { label: "Applied", color: isDark ? "#818cf8" : "#6366f1" },
+                      { label: "Interview", color: isDark ? "#fbbf24" : "#f59e0b" },
+                      { label: "Offer", color: isDark ? "#34d399" : "#10b981" },
+                      { label: "Rejected", color: isDark ? "#94a3b8" : "#64748b" },
+                    ].map((s) => (
+                      <span key={s.label} className="flex items-center gap-1 text-[10px] text-muted">
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                        <span className="hidden sm:inline">{s.label}</span>
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={monthlyData} barSize={28}>
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={monthlyData}>
+                    <defs>
+                      <linearGradient id="gApplied" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={isDark ? "#818cf8" : "#6366f1"} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={isDark ? "#818cf8" : "#6366f1"} stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="gInterview" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={isDark ? "#fbbf24" : "#f59e0b"} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={isDark ? "#fbbf24" : "#f59e0b"} stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="gOffer" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={isDark ? "#34d399" : "#10b981"} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={isDark ? "#34d399" : "#10b981"} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line-strong)" vertical={false} />
                     <XAxis dataKey="month" tick={{ fontSize: 12, fill: "var(--color-muted)" }} axisLine={false} tickLine={false} />
                     <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "var(--color-muted)" }} axisLine={false} tickLine={false} />
                     <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid var(--color-line-strong)", fontSize: "13px", backgroundColor: "var(--color-card)", color: "var(--color-heading)" }} />
-                    <Bar dataKey="count" fill={isDark ? "#60a5fa" : "#6366f1"} radius={[6, 6, 0, 0]} />
-                  </BarChart>
+                    <Area type="monotone" dataKey="Applied" stroke={isDark ? "#818cf8" : "#6366f1"} fill="url(#gApplied)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="Interview" stroke={isDark ? "#fbbf24" : "#f59e0b"} fill="url(#gInterview)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="Offer" stroke={isDark ? "#34d399" : "#10b981"} fill="url(#gOffer)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="Rejected" stroke={isDark ? "#94a3b8" : "#64748b"} fill="none" strokeWidth={2} strokeDasharray="4 4" />
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
 
               <div className="bg-card rounded-2xl border border-line p-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-5">
                   <h3 className="text-sm font-semibold text-heading">Application Funnel</h3>
                   <span className="text-xs text-muted">Conversion rates</span>
                 </div>
-                <div className="space-y-4 mt-6">
+                <div className="space-y-3">
                   {funnelData.map((item, i) => {
-                    const colors = ["bg-brand-500", "bg-amber-500", "bg-emerald-500"];
-                    const bgColors = ["bg-brand-100 dark:bg-brand-900/30", "bg-amber-100 dark:bg-amber-900/30", "bg-emerald-100 dark:bg-emerald-900/30"];
+                    const colors = [isDark ? "#818cf8" : "#6366f1", isDark ? "#fbbf24" : "#f59e0b", isDark ? "#34d399" : "#10b981"];
+                    const widths = [100, 70, 45];
+                    const isLast = i === funnelData.length - 1;
+                    const conversionFromPrev = i > 0 && funnelData[i - 1].count > 0
+                      ? Math.round((item.count / funnelData[i - 1].count) * 100)
+                      : null;
                     return (
                       <div key={item.stage}>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-sm font-medium text-heading">{item.stage}</span>
-                          <span className="text-sm text-muted">{item.count} <span className="text-xs">({item.pct}%)</span></span>
-                        </div>
-                        <div className={`w-full rounded-full h-2.5 ${bgColors[i]}`}>
-                          <div className={`${colors[i]} h-2.5 rounded-full transition-all duration-500`} style={{ width: `${item.pct}%`, minWidth: item.count > 0 ? "8px" : "0" }} />
+                        {i > 0 && (
+                          <div className="flex items-center justify-center gap-2 py-1">
+                            <svg className="w-3 h-3 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" /></svg>
+                            <span className="text-[11px] font-medium text-muted">{conversionFromPrev}% conversion</span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-center">
+                          <div
+                            className="relative rounded-lg py-3 px-4 flex items-center justify-between transition-all duration-500"
+                            style={{
+                              width: `${widths[i]}%`,
+                              backgroundColor: `${colors[i]}15`,
+                              borderLeft: `3px solid ${colors[i]}`,
+                            }}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors[i] }} />
+                              <span className="text-sm font-medium text-heading">{item.stage}</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-lg font-bold text-heading">{item.count}</span>
+                              {!isLast && <span className="text-xs text-muted ml-1">({item.pct}%)</span>}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     );
                   })}
                 </div>
+                {totalApps > 0 && stats.Rejected > 0 && (
+                  <div className="mt-4 pt-3 border-t border-line flex items-center justify-between px-2">
+                    <span className="text-xs text-muted flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-red-400" />
+                      Rejected
+                    </span>
+                    <span className="text-xs font-medium text-red-400">{stats.Rejected} ({Math.round((stats.Rejected / totalApps) * 100)}%)</span>
+                  </div>
+                )}
               </div>
             </div>
 
