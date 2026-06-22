@@ -984,7 +984,7 @@ export default function Dashboard() {
                   {formContacts.length > 0 && (
                     <div className="space-y-1.5">
                       {formContacts.map((c, i) => (
-                        <div key={i} className="flex items-center justify-between px-3 py-2 bg-page/50 border border-line rounded-lg">
+                        <div key={`${c.name}-${c.email || i}`} className="flex items-center justify-between px-3 py-2 bg-page/50 border border-line rounded-lg">
                           <div className="min-w-0">
                             <span className="text-xs font-medium text-heading">{c.name}</span>
                             {c.role && <span className="text-xs text-muted ml-1.5">· {c.role}</span>}
@@ -1581,7 +1581,7 @@ export default function Dashboard() {
                 {editJob.contacts?.length > 0 && (
                   <div className="space-y-1.5 max-h-32 overflow-y-auto">
                     {editJob.contacts.map((c, i) => (
-                      <div key={i} className="flex items-center justify-between px-3 py-2 bg-page/50 border border-line rounded-lg">
+                      <div key={`${c.name}-${c.email || i}`} className="flex items-center justify-between px-3 py-2 bg-page/50 border border-line rounded-lg">
                         <div className="min-w-0">
                           <span className="text-xs font-medium text-heading">{c.name}</span>
                           {c.role && <span className="text-xs text-muted ml-1.5">· {c.role}</span>}
