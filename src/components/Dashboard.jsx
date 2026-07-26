@@ -19,6 +19,7 @@ import OnboardingTour from "./OnboardingTour";
 
 const AITailorTab = lazy(() => import("./AITailorTab"));
 const DocumentsTab = lazy(() => import("./DocumentsTab"));
+const InterviewPrepTab = lazy(() => import("./InterviewPrepTab"));
 
 export default function Dashboard() {
   const d = useDashboardData();
@@ -115,6 +116,12 @@ export default function Dashboard() {
         {d.activeTab === "ai" && (
           <Suspense fallback={<div className="text-center py-12 text-muted">Loading AI Tailor...</div>}>
             <AITailorTab authHeader={d.authHeader} />
+          </Suspense>
+        )}
+
+        {d.activeTab === "interview-prep" && (
+          <Suspense fallback={<div className="text-center py-12 text-muted">Loading Interview Prep...</div>}>
+            <InterviewPrepTab authHeader={d.authHeader} jobs={d.jobs} />
           </Suspense>
         )}
 

@@ -352,6 +352,7 @@ export default function useDashboardData() {
     { id: "archived", label: "Archived" },
     { id: "activity", label: "Activity" },
     { id: "ai", label: "AI Tailor" },
+    { id: "interview-prep", label: "Interview Prep" },
   ];
 
   return {
