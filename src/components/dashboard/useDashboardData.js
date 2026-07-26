@@ -5,7 +5,7 @@ import { API } from "../../utils/constants";
 import { getWeeklyData } from "../../utils/helpers";
 import { useToast } from "../Toast";
 
-export default function useDashboardData() {
+export default function useDashboardData(initialSession) {
   const [jobs, setJobs] = useState([]);
   const [stats, setStats] = useState({ Applied: 0, Interview: 0, Offer: 0, Rejected: 0 });
   const [company, setCompany] = useState("");
@@ -51,10 +51,9 @@ export default function useDashboardData() {
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactInput, setContactInput] = useState({ name: "", role: "", email: "", phone: "", linkedin: "", notes: "" });
 
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState(initialSession);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session: s } }) => setSession(s));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
     return () => subscription.unsubscribe();
   }, []);

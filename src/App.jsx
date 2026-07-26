@@ -4,7 +4,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import LandingPage from "./pages/LandingPage";
 
-const Dashboard = lazy(() => import("./components/Dashboard"));
+const dashboardImport = import("./components/Dashboard");
+const Dashboard = lazy(() => dashboardImport);
 
 const LoadingScreen = () => (
   <div className="min-h-screen bg-page flex items-center justify-center">
@@ -37,7 +38,7 @@ function App() {
 
   if (session) return (
     <Suspense fallback={<LoadingScreen />}>
-      <Dashboard />
+      <Dashboard session={session} />
     </Suspense>
   );
 

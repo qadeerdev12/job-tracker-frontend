@@ -21,8 +21,8 @@ const AITailorTab = lazy(() => import("./AITailorTab"));
 const DocumentsTab = lazy(() => import("./DocumentsTab"));
 const InterviewPrepTab = lazy(() => import("./InterviewPrepTab"));
 
-export default function Dashboard() {
-  const d = useDashboardData();
+export default function Dashboard({ session: initialSession }) {
+  const d = useDashboardData(initialSession);
 
   const chartData = [
     { name: "Applied", value: d.stats.Applied },
