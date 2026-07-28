@@ -50,6 +50,7 @@ export default function useDashboardData(initialSession) {
   const [formContacts, setFormContacts] = useState([]);
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactInput, setContactInput] = useState({ name: "", role: "", email: "", phone: "", linkedin: "", notes: "" });
+  const [submitting, setSubmitting] = useState(false);
 
   const [session, setSession] = useState(initialSession);
 
@@ -164,9 +165,11 @@ export default function useDashboardData(initialSession) {
 
   const createJob = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       const res = await axios.post(`${API}/api/jobs`, { company, role, status, link, notes, tags: formTags, followUpDate: followUpDate || null, contacts: formContacts }, authHeader());
-      setJobs((prev) => [res.data, ...prev]);
+      setJobs((prev) => [res.data, ...prev.filter((j) => j._id !== res.data._id)]);
       const newTags = formTags.filter((t) => !allTags.includes(t));
       if (newTags.length) setAllTags((prev) => [...prev, ...newTags]);
       refreshStats();
@@ -184,6 +187,8 @@ export default function useDashboardData(initialSession) {
       toast("Application added successfully");
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to add application");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -370,7 +375,7 @@ export default function useDashboardData(initialSession) {
     deleteConfirmText, setDeleteConfirmText, emailNotifications, setEmailNotifications,
     sendingTestEmail, setSendingTestEmail, testEmailMsg, setTestEmailMsg,
     formContacts, setFormContacts, showContactForm, setShowContactForm,
-    contactInput, setContactInput, session,
+    contactInput, setContactInput, session, submitting,
 
     // Derived
     userName, firstName, initials, filteredJobs, recentActivity, weeklyData,

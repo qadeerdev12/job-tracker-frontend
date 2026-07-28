@@ -78,6 +78,7 @@ export default function Dashboard({ session: initialSession }) {
             setFormContacts={d.setFormContacts} showContactForm={d.showContactForm}
             setShowContactForm={d.setShowContactForm} contactInput={d.contactInput}
             setContactInput={d.setContactInput} createJob={d.createJob}
+            submitting={d.submitting}
           />
         )}
 

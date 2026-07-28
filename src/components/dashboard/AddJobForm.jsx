@@ -5,7 +5,7 @@ export default function AddJobForm({
   company, setCompany, role, setRole, status, setStatus, link, setLink,
   notes, setNotes, followUpDate, setFollowUpDate, formTags, setFormTags,
   allTags, formContacts, setFormContacts, showContactForm, setShowContactForm,
-  contactInput, setContactInput, createJob,
+  contactInput, setContactInput, createJob, submitting,
 }) {
   return (
     <div className="max-w-xl mx-auto">
@@ -110,8 +110,11 @@ export default function AddJobForm({
             </select>
           </div>
 
-          <button className="w-full bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-lg text-sm font-medium shadow-sm shadow-brand-600/20 transition-colors mt-2">
-            Add Application
+          <button disabled={submitting} className="w-full bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-lg text-sm font-medium shadow-sm shadow-brand-600/20 transition-colors mt-2 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            {submitting && (
+              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+            )}
+            {submitting ? "Adding..." : "Add Application"}
           </button>
         </form>
       </div>
