@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 const STEPS = [
   {
     target: "[data-tour='welcome']",
-    title: "Welcome to TailorTrack!",
+    title: "Welcome to TailorTrac!",
     body: "Your personal job application tracker. Let's take a quick tour of the key features.",
     placement: "bottom",
     noHighlight: true,

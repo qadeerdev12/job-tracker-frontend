@@ -77,11 +77,11 @@ function Register({ setPage }) {
           onClick={() => setPage("landing")}
           className="block mx-auto text-3xl font-extrabold text-brand-600 mb-2 hover:text-brand-700 transition-colors"
         >
-          TailorTrack
+          TailorTrac
         </button>
 
         <h2 className="text-xl font-bold mb-1 text-center text-heading">
-          Join TailorTrack
+          Join TailorTrac
         </h2>
 
         <p className="text-center text-muted mb-6 text-sm">

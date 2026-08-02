@@ -52,7 +52,7 @@ export default function ApplicationsTab({
                 const url = window.URL.createObjectURL(new Blob([res.data]));
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = "tailortrack-export.csv";
+                a.download = "tailortrac-export.csv";
                 a.click();
                 window.URL.revokeObjectURL(url);
                 toast("CSV exported successfully");

@@ -4,7 +4,7 @@ const ROTATING_ROLES = ["engineers", "designers", "analysts", "marketers", "grad
 
 const FAQS = [
   {
-    q: "Is TailorTrack really free?",
+    q: "Is TailorTrac really free?",
     a: "Yes. Tracking, analytics, reminders, documents, and CSV export are free. AI features (resume tailoring and interview prep) include 5 requests per day each.",
   },
   {
@@ -21,7 +21,7 @@ const FAQS = [
   },
   {
     q: "Can I use it on my phone?",
-    a: "Yes — TailorTrack is fully responsive with a mobile-optimized navigation, so you can log an application right after you hit submit.",
+    a: "Yes — TailorTrac is fully responsive with a mobile-optimized navigation, so you can log an application right after you hit submit.",
   },
 ];
 
@@ -112,7 +112,7 @@ function LandingPage({ setPage }) {
             <div className="w-8 h-8 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
               <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20L17.5 6.5" stroke="currentColor" strokeWidth={2.5} /><path d="M17.5 6.5l2.5-2.5" stroke="currentColor" strokeWidth={1.5} /><circle cx="20" cy="4" r="1.5" fill="currentColor" /><path d="M4 20c0 0-1 -5 3-9" stroke="currentColor" strokeWidth={1.8} /><path d="M4 20c0 0 5 1 9-3" stroke="currentColor" strokeWidth={1.8} /></svg>
             </div>
-            <span className="text-2xl font-extrabold text-brand-600">TailorTrack</span>
+            <span className="text-2xl font-extrabold text-brand-600">TailorTrac</span>
           </div>
           <div className="flex gap-3">
             <button
@@ -425,7 +425,7 @@ function LandingPage({ setPage }) {
             Ready to take control of your job search?
           </h2>
           <p className="text-white/80 text-lg mb-10">
-            Join TailorTrack today — it's free to get started.
+            Join TailorTrac today — it's free to get started.
           </p>
           <button
             onClick={() => setPage("register")}
@@ -443,9 +443,9 @@ function LandingPage({ setPage }) {
             <div className="w-6 h-6 bg-gradient-to-br from-brand-400 to-brand-600 rounded-md flex items-center justify-center">
               <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20L17.5 6.5" stroke="currentColor" strokeWidth={2.5} /><path d="M17.5 6.5l2.5-2.5" stroke="currentColor" strokeWidth={1.5} /><circle cx="20" cy="4" r="1.5" fill="currentColor" /><path d="M4 20c0 0-1 -5 3-9" stroke="currentColor" strokeWidth={1.8} /><path d="M4 20c0 0 5 1 9-3" stroke="currentColor" strokeWidth={1.8} /></svg>
             </div>
-            <span className="text-brand-400 font-bold">TailorTrack</span>
+            <span className="text-brand-400 font-bold">TailorTrac</span>
           </div>
-          <p className="text-muted text-sm mt-2">&copy; 2026 TailorTrack. All rights reserved.</p>
+          <p className="text-muted text-sm mt-2">&copy; 2026 TailorTrac. All rights reserved.</p>
         </div>
       </footer>
     </div>
