@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import Logo from "../components/Logo";
 
 const ROTATING_ROLES = ["engineers", "designers", "analysts", "marketers", "graduates"];
 
@@ -109,8 +110,8 @@ function LandingPage({ setPage }) {
       <nav className="fixed top-0 w-full bg-topbar backdrop-blur-md z-50 border-b border-line">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20L17.5 6.5" stroke="currentColor" strokeWidth={2.5} /><path d="M17.5 6.5l2.5-2.5" stroke="currentColor" strokeWidth={1.5} /><circle cx="20" cy="4" r="1.5" fill="currentColor" /><path d="M4 20c0 0-1 -5 3-9" stroke="currentColor" strokeWidth={1.8} /><path d="M4 20c0 0 5 1 9-3" stroke="currentColor" strokeWidth={1.8} /></svg>
+            <div className="w-9 h-9 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
+              <Logo className="w-6 h-6 text-white" />
             </div>
             <span className="text-2xl font-extrabold text-brand-600">TailorTrac</span>
           </div>
@@ -440,8 +441,8 @@ function LandingPage({ setPage }) {
       <footer className="bg-sidebar py-8 px-6">
         <div className="max-w-6xl mx-auto text-center">
           <div className="flex items-center gap-2 justify-center">
-            <div className="w-6 h-6 bg-gradient-to-br from-brand-400 to-brand-600 rounded-md flex items-center justify-center">
-              <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20L17.5 6.5" stroke="currentColor" strokeWidth={2.5} /><path d="M17.5 6.5l2.5-2.5" stroke="currentColor" strokeWidth={1.5} /><circle cx="20" cy="4" r="1.5" fill="currentColor" /><path d="M4 20c0 0-1 -5 3-9" stroke="currentColor" strokeWidth={1.8} /><path d="M4 20c0 0 5 1 9-3" stroke="currentColor" strokeWidth={1.8} /></svg>
+            <div className="w-7 h-7 bg-gradient-to-br from-brand-400 to-brand-600 rounded-md flex items-center justify-center">
+              <Logo className="w-5 h-5 text-white" />
             </div>
             <span className="text-brand-400 font-bold">TailorTrac</span>
           </div>

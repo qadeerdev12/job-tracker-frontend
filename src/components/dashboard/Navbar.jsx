@@ -1,4 +1,5 @@
 import ThemeToggle from "../ThemeToggle";
+import Logo from "../Logo";
 
 export default function Navbar({ activeTab, setActiveTab, navItems, mobileMenuOpen, setMobileMenuOpen, initials, handleLogout }) {
   return (
@@ -8,7 +9,7 @@ export default function Navbar({ activeTab, setActiveTab, navItems, mobileMenuOp
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2" data-tour="welcome">
               <div className="w-7 h-7 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20L17.5 6.5" stroke="currentColor" strokeWidth={2.5} /><path d="M17.5 6.5l2.5-2.5" stroke="currentColor" strokeWidth={1.5} /><circle cx="20" cy="4" r="1.5" fill="currentColor" /><path d="M4 20c0 0-1 -5 3-9" stroke="currentColor" strokeWidth={1.8} /><path d="M4 20c0 0 5 1 9-3" stroke="currentColor" strokeWidth={1.8} /></svg>
+                <Logo className="w-5 h-5 text-white" />
               </div>
               <span className="text-lg font-bold text-brand-400 tracking-tight">TailorTrac</span>
             </div>
