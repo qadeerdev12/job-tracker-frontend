@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import axios from "axios";
 import { supabase } from "../../lib/supabase";
 import { API } from "../../utils/constants";
@@ -217,20 +217,29 @@ export default function useDashboardData(initialSession) {
     }
   };
 
+  // Ids with an archive/restore request in flight. A ref rather than state so a
+  // rapid second click is blocked immediately, without waiting for a re-render.
+  const archivingIds = useRef(new Set());
+
   const archiveJob = async (jobId, archive) => {
+    if (archivingIds.current.has(jobId)) return;
+    archivingIds.current.add(jobId);
     try {
       const res = await axios.put(`${API}/api/jobs/${jobId}`, { archived: archive }, authHeader());
+      // Filter the target id out before prepending so the row can never appear twice
       if (archive) {
         setJobs((prev) => prev.filter((j) => j._id !== jobId));
-        setArchivedJobs((prev) => [res.data, ...prev]);
+        setArchivedJobs((prev) => [res.data, ...prev.filter((j) => j._id !== jobId)]);
       } else {
         setArchivedJobs((prev) => prev.filter((j) => j._id !== jobId));
-        setJobs((prev) => [res.data, ...prev]);
+        setJobs((prev) => [res.data, ...prev.filter((j) => j._id !== jobId)]);
       }
       refreshStats();
       toast(archive ? "Application archived" : "Application restored");
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to archive application");
+    } finally {
+      archivingIds.current.delete(jobId);
     }
   };
 
