@@ -46,6 +46,7 @@ export default function Dashboard({ session: initialSession }) {
         setWeeklyGoal={d.setWeeklyGoal} goalPct={d.goalPct} editingGoal={d.editingGoal}
         setEditingGoal={d.setEditingGoal} goalInput={d.goalInput}
         setGoalInput={d.setGoalInput} authHeader={d.authHeader}
+        activeTab={d.activeTab}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">

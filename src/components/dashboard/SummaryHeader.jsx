@@ -5,6 +5,7 @@ import { SummaryCardsSkeleton, GoalRingSkeleton } from "../Skeletons";
 export default function SummaryHeader({
   loading, stats, totalApps, firstName, weeklyApps, weeklyGoal, setWeeklyGoal,
   goalPct, editingGoal, setEditingGoal, goalInput, setGoalInput, authHeader,
+  activeTab,
 }) {
   const today = new Date();
   const dateStr = today.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" });
@@ -26,7 +27,7 @@ export default function SummaryHeader({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-2">
+    <div className={`max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-2 ${activeTab === "dashboard" ? "" : "hidden md:block"}`}>
       <div className="bg-card rounded-2xl border border-line p-6 sm:p-8">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
           <div className="flex-1">
