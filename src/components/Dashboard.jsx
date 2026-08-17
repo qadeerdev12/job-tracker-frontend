@@ -118,7 +118,7 @@ export default function Dashboard({ session: initialSession }) {
 
         {d.activeTab === "ai" && (
           <Suspense fallback={<div className="text-center py-12 text-muted">Loading AI Tailor...</div>}>
-            <AITailorTab authHeader={d.authHeader} />
+            <AITailorTab authHeader={d.authHeader} jobs={d.jobs} />
           </Suspense>
         )}
 

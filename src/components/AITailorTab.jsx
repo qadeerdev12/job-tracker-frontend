@@ -2,21 +2,36 @@ import { useState, useRef } from "react";
 import axios from "axios";
 import { API, inputClass } from "../utils/constants";
 
-export default function AITailorTab({ authHeader }) {
+export default function AITailorTab({ authHeader, jobs = [] }) {
   const [inputMode, setInputMode] = useState("upload");
   const [resumeText, setResumeText] = useState("");
   const [resumeFile, setResumeFile] = useState(null);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
   const [jobDescription, setJobDescription] = useState("");
+  const [jdSource, setJdSource] = useState("application");
+  const [selectedJobId, setSelectedJobId] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [remaining, setRemaining] = useState(null);
 
+  const selectedJob = jobs.find((j) => j._id === selectedJobId) || null;
+  const savedDescription = (selectedJob?.description || "").trim();
+
+  // Whichever source is active is the one that gets analysed.
+  const effectiveJD = jdSource === "application" ? savedDescription : jobDescription;
+
   const canAnalyze =
-    jobDescription.trim().length >= 20 &&
+    effectiveJD.trim().length >= 20 &&
     (inputMode === "upload" ? resumeFile !== null : resumeText.trim().length >= 20);
+
+  // Carry a saved description over when switching to manual, so the user can
+  // tweak it rather than losing it.
+  const switchToManual = () => {
+    if (savedDescription && !jobDescription.trim()) setJobDescription(savedDescription);
+    setJdSource("manual");
+  };
 
   const allowedTypes = [
     "application/pdf",
@@ -51,7 +66,15 @@ export default function AITailorTab({ authHeader }) {
   };
 
   const handleAnalyze = async () => {
-    if (jobDescription.trim().length < 20) {
+    if (jdSource === "application" && !selectedJob) {
+      setError("Please select an application, or switch to pasting a job description.");
+      return;
+    }
+    if (jdSource === "application" && !savedDescription) {
+      setError("That application has no job description saved. Add one by editing it, or paste one manually.");
+      return;
+    }
+    if (effectiveJD.trim().length < 20) {
       setError("Please provide a job description (at least 20 characters)");
       return;
     }
@@ -71,12 +94,12 @@ export default function AITailorTab({ authHeader }) {
       if (inputMode === "upload") {
         const formData = new FormData();
         formData.append("resume", resumeFile);
-        formData.append("jobDescription", jobDescription);
+        formData.append("jobDescription", effectiveJD);
         const headers = authHeader();
         headers.headers["Content-Type"] = "multipart/form-data";
         res = await axios.post(`${API}/api/ai/tailor-file`, formData, headers);
       } else {
-        res = await axios.post(`${API}/api/ai/tailor`, { jobDescription, resumeText }, authHeader());
+        res = await axios.post(`${API}/api/ai/tailor`, { jobDescription: effectiveJD, resumeText }, authHeader());
       }
       setResult(res.data.result);
       setRemaining(res.data.remaining);
@@ -209,15 +232,91 @@ export default function AITailorTab({ authHeader }) {
               )}
             </div>
             <div>
-              <label className="block text-xs font-medium text-heading mb-1.5">Job Description</label>
-              <textarea
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-                placeholder="Paste the job description here..."
-                rows={10}
-                className={`${inputClass} resize-none`}
-              />
-              <p className="text-xs text-muted mt-1">{jobDescription.length}/5000</p>
+              <div className="flex items-center justify-between mb-1.5 gap-2">
+                <label className="block text-xs font-medium text-heading">Job Description</label>
+                <div className="flex gap-0.5 bg-page border border-line rounded-lg p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setJdSource("application")}
+                    className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors ${
+                      jdSource === "application" ? "bg-card text-brand-500 shadow-sm" : "text-muted hover:text-body"
+                    }`}
+                  >
+                    From application
+                  </button>
+                  <button
+                    type="button"
+                    onClick={switchToManual}
+                    className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors ${
+                      jdSource === "manual" ? "bg-card text-brand-500 shadow-sm" : "text-muted hover:text-body"
+                    }`}
+                  >
+                    Paste manually
+                  </button>
+                </div>
+              </div>
+
+              {jdSource === "application" ? (
+                <div>
+                  <select
+                    value={selectedJobId}
+                    onChange={(e) => { setSelectedJobId(e.target.value); setError(""); }}
+                    className={inputClass}
+                  >
+                    <option value="">Select an application...</option>
+                    {jobs.map((j) => (
+                      <option key={j._id} value={j._id}>
+                        {j.company} — {j.role}{j.description ? "" : "  (no description saved)"}
+                      </option>
+                    ))}
+                  </select>
+
+                  {jobs.length === 0 && (
+                    <p className="text-xs text-muted mt-2">
+                      You haven't added any applications yet. Paste a job description manually instead.
+                    </p>
+                  )}
+
+                  {selectedJob && savedDescription && (
+                    <div className="mt-3 rounded-lg border border-line bg-page p-3">
+                      <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mb-1.5">
+                        ✓ Using the saved description ({savedDescription.length.toLocaleString()} characters)
+                      </p>
+                      <p className="text-xs text-body line-clamp-6 whitespace-pre-wrap">{savedDescription.slice(0, 420)}{savedDescription.length > 420 ? "…" : ""}</p>
+                    </div>
+                  )}
+
+                  {selectedJob && !savedDescription && (
+                    <div className="mt-3 rounded-lg border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-3">
+                      <p className="text-xs font-semibold text-amber-800 dark:text-amber-300 mb-1">
+                        No job description saved for this application
+                      </p>
+                      <p className="text-xs text-amber-700 dark:text-amber-400/90 mb-2.5">
+                        Add one by editing <span className="font-medium">{selectedJob.company} — {selectedJob.role}</span> in your Applications tab, or paste it here just for this analysis.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={switchToManual}
+                        className="text-xs font-medium text-amber-800 dark:text-amber-300 underline underline-offset-2 hover:opacity-80"
+                      >
+                        Paste it manually instead
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <textarea
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                    placeholder="Paste the job description here..."
+                    rows={10}
+                    maxLength={10000}
+                    className={`${inputClass} resize-none`}
+                  />
+                  <p className="text-xs text-muted mt-1">{jobDescription.length.toLocaleString()}/10,000</p>
+                </>
+              )}
             </div>
           </div>
 
