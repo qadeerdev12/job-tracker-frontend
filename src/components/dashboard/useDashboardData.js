@@ -13,6 +13,7 @@ export default function useDashboardData(initialSession) {
   const [status, setStatus] = useState("Applied");
   const [link, setLink] = useState("");
   const [notes, setNotes] = useState("");
+  const [description, setDescription] = useState("");
   const [followUpDate, setFollowUpDate] = useState("");
   const [formTags, setFormTags] = useState([]);
   const [search, setSearch] = useState("");
@@ -168,7 +169,7 @@ export default function useDashboardData(initialSession) {
     if (submitting) return;
     setSubmitting(true);
     try {
-      const res = await axios.post(`${API}/api/jobs`, { company, role, status, link, notes, tags: formTags, followUpDate: followUpDate || null, contacts: formContacts }, authHeader());
+      const res = await axios.post(`${API}/api/jobs`, { company, role, status, link, notes, description, tags: formTags, followUpDate: followUpDate || null, contacts: formContacts }, authHeader());
       setJobs((prev) => [res.data, ...prev.filter((j) => j._id !== res.data._id)]);
       const newTags = formTags.filter((t) => !allTags.includes(t));
       if (newTags.length) setAllTags((prev) => [...prev, ...newTags]);
@@ -178,6 +179,7 @@ export default function useDashboardData(initialSession) {
       setStatus("Applied");
       setLink("");
       setNotes("");
+      setDescription("");
       setFollowUpDate("");
       setFormTags([]);
       setFormContacts([]);
@@ -371,7 +373,8 @@ export default function useDashboardData(initialSession) {
   return {
     // State
     jobs, stats, company, setCompany, role, setRole, status, setStatus,
-    link, setLink, notes, setNotes, followUpDate, setFollowUpDate,
+    link, setLink, notes, setNotes, description, setDescription,
+    followUpDate, setFollowUpDate,
     formTags, setFormTags, search, setSearch, filterStatus, setFilterStatus,
     filterTag, setFilterTag, sortBy, setSortBy, activeTab, setActiveTab,
     allTags, mobileMenuOpen, setMobileMenuOpen, loading, toasts, toast,

@@ -27,6 +27,25 @@ export default function EditJobModal({ editJob, setEditJob, updateJob, allTags }
             <label className="block text-xs font-medium text-body mb-1.5">Job URL</label>
             <input type="url" value={editJob.link || ""} onChange={(e) => setEditJob({ ...editJob, link: e.target.value })} className={inputClass} />
           </div>
+          <details className="group" open={Boolean(editJob.description)}>
+            <summary className="flex items-center gap-1.5 text-xs font-medium text-body cursor-pointer select-none list-none">
+              <svg className="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+              Job Description
+              <span className="text-muted font-normal">optional — used by the AI features</span>
+            </summary>
+            <textarea
+              placeholder="Paste the job posting here. AI Tailor and Interview Prep will use it automatically."
+              value={editJob.description || ""}
+              onChange={(e) => setEditJob({ ...editJob, description: e.target.value })}
+              rows={6}
+              maxLength={10000}
+              className={`${inputClass} resize-y mt-2`}
+            />
+            {editJob.description && (
+              <p className="text-[11px] text-muted mt-1">{editJob.description.length.toLocaleString()} / 10,000 characters</p>
+            )}
+          </details>
+
           <div>
             <label className="block text-xs font-medium text-body mb-1.5">Notes</label>
             <textarea value={editJob.notes || ""} onChange={(e) => setEditJob({ ...editJob, notes: e.target.value })} rows={3} className={`${inputClass} resize-none`} />
@@ -104,7 +123,7 @@ export default function EditJobModal({ editJob, setEditJob, updateJob, allTags }
 
         <div className="flex gap-3 mt-6">
           <button
-            onClick={() => updateJob(editJob._id, { company: editJob.company, role: editJob.role, status: editJob.status, link: editJob.link, notes: editJob.notes, tags: editJob.tags || [], followUpDate: editJob.followUpDate || null, interviews: editJob.interviews || [], contacts: editJob.contacts || [] })}
+            onClick={() => updateJob(editJob._id, { company: editJob.company, role: editJob.role, status: editJob.status, link: editJob.link, notes: editJob.notes, description: editJob.description || "", tags: editJob.tags || [], followUpDate: editJob.followUpDate || null, interviews: editJob.interviews || [], contacts: editJob.contacts || [] })}
             className="flex-1 bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-lg text-sm font-medium shadow-sm transition-colors"
           >
             Save Changes

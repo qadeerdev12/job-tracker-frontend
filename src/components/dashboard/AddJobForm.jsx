@@ -3,7 +3,7 @@ import TagInput from "../TagInput";
 
 export default function AddJobForm({
   company, setCompany, role, setRole, status, setStatus, link, setLink,
-  notes, setNotes, followUpDate, setFollowUpDate, formTags, setFormTags,
+  notes, setNotes, description, setDescription, followUpDate, setFollowUpDate, formTags, setFormTags,
   allTags, formContacts, setFormContacts, showContactForm, setShowContactForm,
   contactInput, setContactInput, createJob, submitting,
 }) {
@@ -31,6 +31,27 @@ export default function AddJobForm({
             <label className="block text-xs font-medium text-body mb-1.5">Job Posting URL</label>
             <input type="url" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} className={inputClass} />
           </div>
+
+          {/* Collapsed by default — long, optional, and only some applications will have it.
+              Uses <details> so the form stays free of local state. */}
+          <details className="group" open={Boolean(description)}>
+            <summary className="flex items-center gap-1.5 text-xs font-medium text-body cursor-pointer select-none list-none">
+              <svg className="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+              Job Description
+              <span className="text-muted font-normal">optional — used by the AI features</span>
+            </summary>
+            <textarea
+              placeholder="Paste the job posting here. AI Tailor and Interview Prep will use it automatically."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={6}
+              maxLength={10000}
+              className={`${inputClass} resize-y mt-2`}
+            />
+            {description && (
+              <p className="text-[11px] text-muted mt-1">{description.length.toLocaleString()} / 10,000 characters</p>
+            )}
+          </details>
 
           <div>
             <label className="block text-xs font-medium text-body mb-1.5">Notes</label>

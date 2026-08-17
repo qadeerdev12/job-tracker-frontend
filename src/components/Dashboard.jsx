@@ -73,6 +73,7 @@ export default function Dashboard({ session: initialSession }) {
             status={d.status} setStatus={d.setStatus}
             link={d.link} setLink={d.setLink}
             notes={d.notes} setNotes={d.setNotes}
+            description={d.description} setDescription={d.setDescription}
             followUpDate={d.followUpDate} setFollowUpDate={d.setFollowUpDate}
             formTags={d.formTags} setFormTags={d.setFormTags}
             allTags={d.allTags} formContacts={d.formContacts}
