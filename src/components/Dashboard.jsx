@@ -14,7 +14,6 @@ import EditJobModal from "./dashboard/EditJobModal";
 import DeleteConfirmModal from "./dashboard/DeleteConfirmModal";
 import InterviewModal from "./dashboard/InterviewModal";
 import DeleteAccountModal from "./dashboard/DeleteAccountModal";
-import MobileBottomNav from "./dashboard/MobileBottomNav";
 import { ToastContainer } from "./Toast";
 import OnboardingTour from "./OnboardingTour";
 
@@ -38,13 +37,14 @@ export default function Dashboard({ session: initialSession }) {
         activeTab={d.activeTab} setActiveTab={d.setActiveTab}
         navItems={d.navItems} initials={d.initials}
         userName={d.userName} handleLogout={d.handleLogout}
+        open={d.sidebarOpen} setOpen={d.setSidebarOpen}
       />
 
       {/* Offset the content by the fixed sidebar's width from md up */}
       <div className="md:pl-60">
         <Navbar
           activeTab={d.activeTab} setActiveTab={d.setActiveTab}
-          initials={d.initials} handleLogout={d.handleLogout}
+          setSidebarOpen={d.setSidebarOpen}
         />
 
       <SummaryHeader
@@ -189,7 +189,6 @@ export default function Dashboard({ session: initialSession }) {
 
       <ToastContainer toasts={d.toasts} />
       <OnboardingTour loading={d.loading} />
-      <MobileBottomNav activeTab={d.activeTab} setActiveTab={d.setActiveTab} />
     </div>
   );
 }

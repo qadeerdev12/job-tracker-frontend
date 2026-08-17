@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Logo from "../Logo";
 
 // Icons keyed by nav id so useDashboardData's navItems stays a plain {id,label} list.
@@ -19,12 +20,38 @@ const GROUPS = [
   { label: "Library", ids: ["documents", "archived", "activity"] },
 ];
 
-export default function Sidebar({ activeTab, setActiveTab, navItems, initials, userName, handleLogout }) {
+export default function Sidebar({ activeTab, setActiveTab, navItems, initials, userName, handleLogout, open, setOpen }) {
   const byId = Object.fromEntries(navItems.map((i) => [i.id, i]));
 
+  // Escape closes the mobile drawer
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, setOpen]);
+
+  // Navigating closes the drawer; on desktop the sidebar is static so this is a no-op
+  const go = (id) => { setActiveTab(id); setOpen(false); };
+
   return (
-    // border-r matters in dark mode, where sidebar and page are nearly the same value
-    <aside className="hidden md:flex fixed inset-y-0 left-0 w-60 bg-sidebar border-r border-white/[0.07] flex-col z-40">
+    <>
+      {/* Backdrop — mobile only, and only while the drawer is open */}
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Drawer below md, static rail from md up.
+          border-r matters in dark mode, where sidebar and page are nearly the same value. */}
+      <aside
+        className={`fixed inset-y-0 left-0 w-60 bg-sidebar border-r border-white/[0.07] flex flex-col z-50 transition-transform duration-200 ease-out md:translate-x-0 ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
       <div className="flex items-center gap-2.5 px-5 h-16 shrink-0" data-tour="welcome">
         <div className="w-9 h-9 bg-gradient-to-br from-brand-400 to-brand-600 rounded-xl flex items-center justify-center shadow-lg shadow-brand-600/20">
           <Logo className="w-6 h-6 text-white" />
@@ -43,7 +70,7 @@ export default function Sidebar({ activeTab, setActiveTab, navItems, initials, u
               return (
                 <button
                   key={id}
-                  onClick={() => setActiveTab(id)}
+                  onClick={() => go(id)}
                   className={`group relative w-full flex items-center gap-3 pl-3.5 pr-3 py-2.5 rounded-xl text-sm font-medium mb-0.5 transition-all duration-150 ${
                     active
                       ? "bg-brand-600 text-white shadow-lg shadow-brand-600/25"
@@ -66,7 +93,7 @@ export default function Sidebar({ activeTab, setActiveTab, navItems, initials, u
 
       <div className="shrink-0 border-t border-white/10 p-3">
         <button
-          onClick={() => setActiveTab("profile")}
+          onClick={() => go("profile")}
           className={`w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-colors ${
             activeTab === "profile" ? "bg-white/[0.08]" : "hover:bg-white/[0.06]"
           }`}
@@ -87,6 +114,7 @@ export default function Sidebar({ activeTab, setActiveTab, navItems, initials, u
           Sign out
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }
