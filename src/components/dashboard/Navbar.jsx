@@ -56,9 +56,11 @@ export default function Navbar({ activeTab, setActiveTab, initials, handleLogout
             >
               {initials}
             </button>
+            {/* Desktop sign-out lives in the sidebar; this one is mobile-only,
+                where the sidebar is hidden. */}
             <button
               onClick={handleLogout}
-              className="hidden md:block text-xs text-muted hover:text-red-400 transition-colors px-2"
+              className="md:hidden text-xs text-muted hover:text-red-400 transition-colors px-2"
             >
               Sign out
             </button>
