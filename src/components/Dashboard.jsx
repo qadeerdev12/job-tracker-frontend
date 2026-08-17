@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import useDashboardData from "./dashboard/useDashboardData";
 import Navbar from "./dashboard/Navbar";
+import Sidebar from "./dashboard/Sidebar";
 import SummaryHeader from "./dashboard/SummaryHeader";
 import DashboardTab from "./dashboard/DashboardTab";
 import ActivityTab from "./dashboard/ActivityTab";
@@ -33,12 +34,18 @@ export default function Dashboard({ session: initialSession }) {
 
   return (
     <div className="min-h-screen bg-page">
-      <Navbar
+      <Sidebar
         activeTab={d.activeTab} setActiveTab={d.setActiveTab}
-        navItems={d.navItems} mobileMenuOpen={d.mobileMenuOpen}
-        setMobileMenuOpen={d.setMobileMenuOpen} initials={d.initials}
-        handleLogout={d.handleLogout}
+        navItems={d.navItems} initials={d.initials}
+        userName={d.userName} handleLogout={d.handleLogout}
       />
+
+      {/* Offset the content by the fixed sidebar's width from md up */}
+      <div className="md:pl-60">
+        <Navbar
+          activeTab={d.activeTab} setActiveTab={d.setActiveTab}
+          initials={d.initials} handleLogout={d.handleLogout}
+        />
 
       <SummaryHeader
         loading={d.loading} stats={d.stats} totalApps={d.totalApps}
@@ -147,7 +154,8 @@ export default function Dashboard({ session: initialSession }) {
             setDeleteAccountModal={d.setDeleteAccountModal} authHeader={d.authHeader}
           />
         )}
-      </main>
+        </main>
+      </div>
 
       <EditJobModal
         editJob={d.editJob} setEditJob={d.setEditJob}

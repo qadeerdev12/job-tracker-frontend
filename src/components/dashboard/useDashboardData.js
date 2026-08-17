@@ -22,7 +22,6 @@ export default function useDashboardData(initialSession) {
   const [sortBy, setSortBy] = useState("newest");
   const [activeTab, setActiveTab] = useState("dashboard");
   const [allTags, setAllTags] = useState([]);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toasts, toast } = useToast();
 
@@ -377,7 +376,7 @@ export default function useDashboardData(initialSession) {
     followUpDate, setFollowUpDate,
     formTags, setFormTags, search, setSearch, filterStatus, setFilterStatus,
     filterTag, setFilterTag, sortBy, setSortBy, activeTab, setActiveTab,
-    allTags, mobileMenuOpen, setMobileMenuOpen, loading, toasts, toast,
+    allTags, loading, toasts, toast,
     archivedJobs, activities, editJob, setEditJob, deleteTarget, setDeleteTarget,
     expandedTimeline, setExpandedTimeline, reminders, upcomingInterviews,
     interviewModal, setInterviewModal, intDate, setIntDate, intTime, setIntTime,

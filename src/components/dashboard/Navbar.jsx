@@ -1,94 +1,70 @@
 import ThemeToggle from "../ThemeToggle";
 import Logo from "../Logo";
 
-export default function Navbar({ activeTab, setActiveTab, navItems, mobileMenuOpen, setMobileMenuOpen, initials, handleLogout }) {
-  return (
-    <nav className="sticky top-0 z-50 bg-topbar backdrop-blur-md border-b border-line">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-14">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2" data-tour="welcome">
-              <div className="w-7 h-7 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
-                <Logo className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-lg font-bold text-brand-400 tracking-tight">TailorTrac</span>
-            </div>
+// Slim top bar. The sidebar owns navigation and identity on desktop, so this
+// keeps only the actions: add, theme, and (on mobile) the brand + profile.
+const TITLES = {
+  dashboard: "Dashboard",
+  applications: "Applications",
+  interviews: "Interviews",
+  documents: "Documents",
+  archived: "Archived",
+  activity: "Activity",
+  ai: "AI Tailor",
+  "interview-prep": "Interview Prep",
+  add: "New Application",
+  profile: "Profile",
+};
 
-            <div className="hidden md:flex items-center gap-1" data-tour="nav-tabs">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    activeTab === item.id
-                      ? "bg-brand-600/10 text-brand-400"
-                      : "text-muted hover:text-heading hover:bg-card"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
+export default function Navbar({ activeTab, setActiveTab, initials, handleLogout }) {
+  return (
+    <header className="sticky top-0 z-30 bg-topbar backdrop-blur-md border-b border-line">
+      <div className="px-4 sm:px-6">
+        <div className="flex items-center justify-between h-16 gap-3">
+          {/* Brand shows on mobile only — the sidebar carries it from md up */}
+          <div className="flex items-center gap-2 md:hidden">
+            <div className="w-8 h-8 bg-gradient-to-br from-brand-400 to-brand-600 rounded-xl flex items-center justify-center">
+              <Logo className="w-5 h-5 text-white" />
             </div>
+            <span className="text-base font-extrabold text-brand-500 tracking-tight">TailorTrac</span>
           </div>
+
+          <h2 className="hidden md:block text-[15px] font-semibold text-heading tracking-tight">
+            {TITLES[activeTab] ?? ""}
+          </h2>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveTab("add")}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition-colors"
+              className="group flex items-center gap-2 pl-3 pr-4 py-2.5 bg-gradient-to-b from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-600 text-white text-sm font-semibold rounded-xl shadow-lg shadow-brand-600/25 hover:shadow-brand-600/40 active:translate-y-px transition-all duration-150"
               data-tour="add-job-btn"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-              <span className="hidden sm:inline">Add</span>
+              <svg className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+              <span className="hidden sm:inline">Add Application</span>
+              <span className="sm:hidden">Add</span>
             </button>
+
             <span data-tour="theme-toggle"><ThemeToggle /></span>
-            <div className="flex items-center gap-2 ml-1">
-              <button
-                onClick={() => setActiveTab("profile")}
-                className="w-8 h-8 bg-gradient-to-br from-brand-400 to-brand-600 rounded-full flex items-center justify-center text-white text-xs font-bold hover:ring-2 hover:ring-brand-400/50 transition-all"
-                title="Profile"
-              >
-                {initials}
-              </button>
-              <button
-                onClick={handleLogout}
-                className="text-xs text-muted hover:text-red-400 transition-colors hidden sm:block"
-              >
-                Sign Out
-              </button>
-            </div>
+
+            {/* Profile + sign out live in the sidebar on desktop */}
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-1.5 text-muted hover:text-heading rounded-lg"
+              onClick={() => setActiveTab("profile")}
+              className={`md:hidden w-9 h-9 bg-gradient-to-br from-brand-400 to-brand-600 rounded-full flex items-center justify-center text-white text-xs font-bold transition-all ${
+                activeTab === "profile" ? "ring-2 ring-brand-400 ring-offset-2 ring-offset-page" : "hover:ring-2 hover:ring-brand-400/50"
+              }`}
+              title="Profile"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+              {initials}
+            </button>
+            <button
+              onClick={handleLogout}
+              className="hidden md:block text-xs text-muted hover:text-red-400 transition-colors px-2"
+            >
+              Sign out
             </button>
           </div>
         </div>
-
-        {mobileMenuOpen && (
-          <div className="md:hidden pb-3 border-t border-line mt-1 pt-2 flex flex-wrap gap-1">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => { setActiveTab(item.id); setMobileMenuOpen(false); }}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeTab === item.id
-                    ? "bg-brand-600/10 text-brand-400"
-                    : "text-muted hover:text-heading"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-            <button
-              onClick={handleLogout}
-              className="sm:hidden px-3 py-2 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
-            >
-              Sign Out
-            </button>
-          </div>
-        )}
       </div>
-    </nav>
+    </header>
   );
 }
