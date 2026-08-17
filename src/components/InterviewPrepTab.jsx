@@ -13,14 +13,24 @@ export default function InterviewPrepTab({ authHeader, jobs }) {
   const [error, setError] = useState("");
   const [remaining, setRemaining] = useState(null);
   const [expandedQ, setExpandedQ] = useState(null);
+  const [selectedJobId, setSelectedJobId] = useState("");
 
   const canGenerate = company.trim().length >= 2 && role.trim().length >= 2;
+
+  const selectedJob = jobs.find((j) => j._id === selectedJobId) || null;
 
   const prefillFromJob = (jobId) => {
     const job = jobs.find((j) => j._id === jobId);
     if (!job) return;
     setCompany(job.company);
     setRole(job.role);
+    // The saved posting is what makes the questions role-specific, so pull it in
+    // and open the panel so it's obvious what's being sent.
+    const saved = (job.description || "").trim();
+    if (saved) {
+      setJobDescription(saved);
+      setShowOptional(true);
+    }
   };
 
   const handleGenerate = async () => {
@@ -60,15 +70,29 @@ export default function InterviewPrepTab({ authHeader, jobs }) {
           <div className="mb-4">
             <label className="block text-xs font-medium text-heading mb-1.5">Quick Fill from Application</label>
             <select
-              onChange={(e) => { if (e.target.value) prefillFromJob(e.target.value); }}
+              value={selectedJobId}
+              onChange={(e) => { setSelectedJobId(e.target.value); if (e.target.value) prefillFromJob(e.target.value); }}
               className={`${inputClass} w-full sm:w-auto sm:min-w-[280px]`}
-              defaultValue=""
             >
               <option value="">Select an application...</option>
               {activeJobs.map((j) => (
-                <option key={j._id} value={j._id}>{j.company} — {j.role}</option>
+                <option key={j._id} value={j._id}>
+                  {j.company} — {j.role}{j.description ? "" : "  (no description saved)"}
+                </option>
               ))}
             </select>
+
+            {selectedJob && selectedJob.description && (
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2">
+                ✓ Loaded the saved job description ({selectedJob.description.trim().length.toLocaleString()} characters) — questions will be specific to this posting.
+              </p>
+            )}
+
+            {selectedJob && !selectedJob.description && (
+              <p className="text-xs text-amber-700 dark:text-amber-400 mt-2">
+                No job description saved for this application. You'll get general questions for the role — add a description by editing it in Applications, or paste one below for sharper results.
+              </p>
+            )}
           </div>
         )}
 
@@ -101,6 +125,9 @@ export default function InterviewPrepTab({ authHeader, jobs }) {
         >
           <svg className={`w-3 h-3 transition-transform ${showOptional ? "rotate-90" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
           {showOptional ? "Hide" : "Add"} optional context for better results
+          {!showOptional && jobDescription.trim() && (
+            <span className="text-muted font-normal">— job description loaded</span>
+          )}
         </button>
 
         {showOptional && (
@@ -112,9 +139,10 @@ export default function InterviewPrepTab({ authHeader, jobs }) {
                 onChange={(e) => setJobDescription(e.target.value)}
                 placeholder="Paste the job description for more targeted questions..."
                 rows={5}
+                maxLength={10000}
                 className={`${inputClass} resize-none`}
               />
-              <p className="text-xs text-muted mt-1">{jobDescription.length}/5000</p>
+              <p className="text-xs text-muted mt-1">{jobDescription.length.toLocaleString()}/10,000</p>
             </div>
             <div>
               <label className="block text-xs font-medium text-heading mb-1.5">Your Resume (optional)</label>
@@ -123,9 +151,10 @@ export default function InterviewPrepTab({ authHeader, jobs }) {
                 onChange={(e) => setResumeText(e.target.value)}
                 placeholder="Paste your resume to get personalized answers..."
                 rows={5}
+                maxLength={8000}
                 className={`${inputClass} resize-none`}
               />
-              <p className="text-xs text-muted mt-1">{resumeText.length}/8000</p>
+              <p className="text-xs text-muted mt-1">{resumeText.length.toLocaleString()}/8,000</p>
             </div>
           </div>
         )}
