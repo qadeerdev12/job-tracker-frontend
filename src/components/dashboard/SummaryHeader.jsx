@@ -2,11 +2,17 @@ import axios from "axios";
 import { API } from "../../utils/constants";
 import { SummaryCardsSkeleton, GoalRingSkeleton } from "../Skeletons";
 
+// Pages where a dashboard summary is out of place — the profile is about you,
+// not your pipeline, and the goal ring already appears there under Account.
+const HIDE_SUMMARY_ON = ["profile"];
+
 export default function SummaryHeader({
   loading, stats, totalApps, firstName, weeklyApps, weeklyGoal, setWeeklyGoal,
   goalPct, editingGoal, setEditingGoal, goalInput, setGoalInput, authHeader,
   activeTab,
 }) {
+  if (HIDE_SUMMARY_ON.includes(activeTab)) return null;
+
   const today = new Date();
   const dateStr = today.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" });
 
