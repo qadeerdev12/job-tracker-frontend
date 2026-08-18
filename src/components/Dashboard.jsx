@@ -152,6 +152,7 @@ export default function Dashboard({ session: initialSession }) {
             sendingTestEmail={d.sendingTestEmail} setSendingTestEmail={d.setSendingTestEmail}
             testEmailMsg={d.testEmailMsg} setTestEmailMsg={d.setTestEmailMsg}
             setDeleteAccountModal={d.setDeleteAccountModal} authHeader={d.authHeader}
+            profile={d.profile} setProfile={d.setProfile} toast={d.toast}
           />
         )}
         </main>

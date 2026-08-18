@@ -23,6 +23,7 @@ export default function useDashboardData(initialSession) {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [allTags, setAllTags] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const { toasts, toast } = useToast();
 
@@ -131,6 +132,17 @@ export default function useDashboardData(initialSession) {
     }
   };
 
+  // Fetched with the dashboard rather than lazily in ProfileTab so the sidebar
+  // avatar is available everywhere.
+  const fetchProfile = async (signal) => {
+    try {
+      const res = await axios.get(`${API}/api/profile`, { ...authHeader(), signal });
+      setProfile(res.data);
+    } catch (error) {
+      if (!axios.isCancel(error)) console.log(error.response?.data || error.message);
+    }
+  };
+
   const fetchSettings = async (signal) => {
     try {
       const res = await axios.get(`${API}/api/jobs/settings`, { ...authHeader(), signal });
@@ -155,6 +167,7 @@ export default function useDashboardData(initialSession) {
       fetchReminders(controller.signal),
       fetchInterviews(controller.signal),
       fetchSettings(controller.signal),
+      fetchProfile(controller.signal),
     ]).finally(() => setLoading(false));
     return () => controller.abort();
   }, [session]);
@@ -388,6 +401,7 @@ export default function useDashboardData(initialSession) {
     sendingTestEmail, setSendingTestEmail, testEmailMsg, setTestEmailMsg,
     formContacts, setFormContacts, showContactForm, setShowContactForm,
     contactInput, setContactInput, session, submitting,
+    profile, setProfile,
 
     // Derived
     userName, firstName, initials, filteredJobs, recentActivity, weeklyData,
