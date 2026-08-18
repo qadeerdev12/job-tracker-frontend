@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import Logo from "../Logo";
+import { avatarUrl } from "../profile/AvatarUpload";
 
 // Icons keyed by nav id so useDashboardData's navItems stays a plain {id,label} list.
 const ICONS = {
@@ -20,7 +21,8 @@ const GROUPS = [
   { label: "Library", ids: ["documents", "archived", "activity"] },
 ];
 
-export default function Sidebar({ activeTab, setActiveTab, navItems, initials, userName, handleLogout, open, setOpen }) {
+export default function Sidebar({ activeTab, setActiveTab, navItems, initials, userName, handleLogout, open, setOpen, avatarPath }) {
+  const photo = avatarUrl(avatarPath);
   const byId = Object.fromEntries(navItems.map((i) => [i.id, i]));
 
   // Escape closes the mobile drawer
@@ -98,9 +100,13 @@ export default function Sidebar({ activeTab, setActiveTab, navItems, initials, u
             activeTab === "profile" ? "bg-white/[0.08]" : "hover:bg-white/[0.06]"
           }`}
         >
-          <span className="w-9 h-9 bg-gradient-to-br from-brand-400 to-brand-600 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
-            {initials}
-          </span>
+          {photo ? (
+            <img src={photo} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
+          ) : (
+            <span className="w-9 h-9 bg-gradient-to-br from-brand-400 to-brand-600 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
+              {initials}
+            </span>
+          )}
           <span className="min-w-0 text-left">
             <span className="block text-sm font-medium text-white truncate">{userName}</span>
             <span className="block text-[11px] text-slate-500">View profile</span>

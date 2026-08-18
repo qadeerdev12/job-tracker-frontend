@@ -16,6 +16,7 @@ import InterviewModal from "./dashboard/InterviewModal";
 import DeleteAccountModal from "./dashboard/DeleteAccountModal";
 import { ToastContainer } from "./Toast";
 import OnboardingTour from "./OnboardingTour";
+import OnboardingWizard from "./profile/OnboardingWizard";
 
 const AITailorTab = lazy(() => import("./AITailorTab"));
 const DocumentsTab = lazy(() => import("./DocumentsTab"));
@@ -38,6 +39,7 @@ export default function Dashboard({ session: initialSession }) {
         navItems={d.navItems} initials={d.initials}
         userName={d.userName} handleLogout={d.handleLogout}
         open={d.sidebarOpen} setOpen={d.setSidebarOpen}
+        avatarPath={d.profile?.avatarPath}
       />
 
       {/* Offset the content by the fixed sidebar's width from md up */}
@@ -189,7 +191,15 @@ export default function Dashboard({ session: initialSession }) {
       />
 
       <ToastContainer toasts={d.toasts} />
-      <OnboardingTour loading={d.loading} />
+      {/* Profile setup for first-time users. The product tour is gated behind it
+          so a new user isn't hit with a form wizard and spotlight tour at once. */}
+      {d.profile && !d.profile.onboardedAt && (
+        <OnboardingWizard
+          userName={d.userName} authHeader={d.authHeader}
+          setProfile={d.setProfile} setActiveTab={d.setActiveTab}
+        />
+      )}
+      {d.profile?.onboardedAt && <OnboardingTour loading={d.loading} />}
     </div>
   );
 }
